@@ -78,10 +78,14 @@ We therefore set about finding appropriate fuzzing libraries in Python, and foun
 \label{fuzzing_sulley}
 Sulley is a fuzzing library for Python which is popular for remote application and protocol fuzzing. Sulley alters the protocol by which it inserts data into an application or system, and observes how that application reacts to the altered input, to simulate problems with networks and human users. It is under active development, and is open sourced.\par
 While using a popular, open-source library for inspiration when creating our own mutation system, Sulley was inappropriate for our needs.\par
-Sulley fuzzes by way of changing protocols and inputs to some system it interacts with. We felt that altering inputs to that system lacked the degree of control that changing workflows directly would provide. Technically, it would be possible to get around this problem by creating models in some remote program that took instructions from some fuzzed input, but we felt that this additional degree of abstraction would lower the self-documenting nature of our models and would be an impractical modelling technique anyway.
+Sulley fuzzes by way of changing protocols and inputs to some system it interacts with. We felt that altering inputs to that system lacked the degree of control that changing workflows directly would provide. Technically, it would be possible to get around this problem by creating models in some remote program that took instructions from some fuzzed input, but we felt that this additional degree of abstraction would lower the self-documenting nature of our models and would be an impractical modelling technique anyway. \par
 
 \subsection{Fusil}
 \label{fuzzing_fuzil}
+Fusil was another fuzzing library that was investigated. Fusil allows for fuzzing the environment of a python program, which made it appealing to us. While environmental factors impact the sociotechnical model however, these factors are unrelated to the properties Fusil is capable of monitoring. \par
+Fusil is able to create mangled files as fuzzed/invalid input to a program, monitors and limits CPU and memory usage, and checks logs for system errors and other signs that a fuzzed program was not functioning correctly under adverse circumstances. This seemed appealing, because monitoring performance under adverse circumstances is precicely our goal in this project. \par
+Unfortunately Fusil also did not meet our requirements: it monitors the effect of a change in computational environment on a program, where we are interested in the effect of the change of a social environment on a workflow. While our workflows are being modelled as programs, this does not mean that the workflows themselves would be being altered, so stress on a sociotechnical system still wouldn't be being modelled. Fusil was a further worse choice when taking into account the fact that we would not be able to pinpoint the errors that were being introduced by observing memory and CPU usage, and other computational concerns. \par
+Therefore, we could not use Fusil as our fuzzing system of choice. \par
 
 \subsection{MutPy}
 \label{fuzzing_mutpy}
