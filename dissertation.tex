@@ -72,12 +72,20 @@ Intended outcome/areas of results of interest...
 \label{research_head}
 \section{Fuzzing}
 \label{research_fuzzing}
+Because the systems we were interested in creating were to be self-documenting, we chose Python as a language to write our models in. Python's clarity combined with the ease of quickly writing working Python code meant that self-documenting models could be feasibly made. In addition, Python supplied language features such as decorators and a built in Abstract Syntax Tree library that made it an ideal candidate. \par
+We therefore set about finding appropriate fuzzing libraries in Python, and found several:
 \subsection{Sulley}
 \label{fuzzing_sulley}
+Sulley is a fuzzing library for Python which is popular for remote application and protocol fuzzing. Sulley alters the protocol by which it inserts data into an application or system, and observes how that application reacts to the altered input, to simulate problems with networks and human users. It is under active development, and is open sourced.\par
+While using a popular, open-source library for inspiration when creating our own mutation system, Sulley was inappropriate for our needs.\par
+Sulley fuzzes by way of changing protocols and inputs to some system it interacts with. We felt that altering inputs to that system lacked the degree of control that changing workflows directly would provide. Technically, it would be possible to get around this problem by creating models in some remote program that took instructions from some fuzzed input, but we felt that this additional degree of abstraction would lower the self-documenting nature of our models and would be an impractical modelling technique anyway.
+
 \subsection{Fusil}
 \label{fuzzing_fuzil}
+
 \subsection{MutPy}
 \label{fuzzing_mutpy}
+
 \subsection{PyMuTester}
 \label{fuzzing_pymutester}
 
