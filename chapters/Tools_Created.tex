@@ -1,6 +1,26 @@
 \chapter{Tools Created}
 \label{implementation_head}
 
+
 \section{Model Outline}
 \label{model_outline}
 
+\section{}
+\label{planning_fuzzing_implementation} % Cass points out that I don't mention why I don't use a language other than Python. Worth discussing here
+The implementation of the fuzzing library was broken down into two distinct parts. \par
+The first was a wrapping function that would allow a modeller to determine which of their functions were to be mutated. This was done by employing \emph{decorators}. \emph{Decorators} are a feature of Python that allow for a clean notation to wrap a function in another function. The wrapping function (the decorator) is passed a function object when the original function is called by a program, and is expected to run the original function around some other work or to conditionally run the function if some preconditions were met. This is often employed for URL to controller function routing in web app frameworks like Django. \par%\cite{} django
+For our purposes, Django would run a mutated version of the original function, meaning that every time the function was called, the decorator would generate a mutation of that function from some source code. Upon generating this fuzzed version of the function, the decorator would call this rather than the original function, thereby running a variant that simulates the unreliability of human actors in a sociotechnical system, as per the library's requirements. \par
+The second section of the library would be the mutation class itself. To do this, inspiration was taken from PyMuTester, which creates an Abstract Syntax Tree from source code and modifies the source for the purposes of analysis. Another reason for continuing to use Python was the availability of an Abstract Syntax Tree library built in to Python, which PyMuTester also used. Where PyMuTester used a Python NodeVisitor to collect information about source, however, we utilised a Python NodeTransformer to edit an abstract syntax tree and return a mutated version. \par%\cite{} pymutester   \cite{} python docs on ast classes?
+When creating the NodeTransformer class, originally some mutations were built into the class' activity, with its behaviour selected through some parameter upon execution, and different decorators passing their associated parameters. In a later version, the decision was made to change this design so that the mutation itself was made to be a parameter. This had two effects: 
+\begin{enumerate}
+    \item A function object was passed as an argument to the decorator, which took a list of Python AST Line objects and returned another list of Python AST Line objects. This meant that the modeller could control the variance introduced precisely, making the tool much more suitable to future use and for powering future work in this area.
+    \item With a mutating function passed to the mutator as a parameter, different mutators were no longer needed to specify different mutation types. Therefore, every function to be mutated in the model becomes flagged with a single line before its definition reading "mutate", followed by the type of mutation required.\\This was to increase readability, and also vastly simplify the act of mutating for a modeller.\\It also allows for greater visibility into the mutator's internal structure, as a qualm had with currently available code fuzzing libraries was that the specific activity when mutating a function could feel akin to a black box, and its effect on the code was not always clear.
+\end{enumerate}\par
+
+The final implementation of the fuzzing library was therefore two Python classes, one for flagging functions where variance is to be introduced and specifying the format of its mutation, and another for carrying out the editing of the workflow using the mutation specified as a parameter of the former class.\par
+The final implementation of the fuzzing library was deemed to meet these requirements, as it: 
+\begin{enumerate}  % Do we really want this to be an itemize? (bulleted list)
+    \item Allowed for easy and readable mutation specification as one decorator, called \emph{"mutate"}, could be used to specify a function needed to be mutated through a custom defined function
+    \item Allowed for flexible mutation on the part of the modeller due to the parametrised mutation behaviour
+    \item \emph{Crucially}, real-time mutation due to the mutations being carried out and subsequently executed in the decorator, and that variant function being run rather than the function called.
+\end{enumerate} \par
