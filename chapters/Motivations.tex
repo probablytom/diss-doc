@@ -1,0 +1,63 @@
+\chapter{Motivations}
+\label{motivations}
+Sociotechnical modelling is important: it can give insight into organisations as small as startups and as large as governments and multinational corporations. It has many applications, too, as different groups use it with different aims in mind. Some use sociotechnical modelling to make more efficient workflows\cite{Aalst2002}, while others use it to create more effective end-products or to analyse the potential products of a system. \par
+
+Sociotechnical systems have been widely adopted for these purposes. For example, adoption of ISO standards for state algebras like Z\cite{ZStandardsPanel2000} and modelling techniques made by and for government use such as SSADM show that there's a concerted international push for sociotechnical modelling techniques. Clearly, sociotechnical systems modelling is regarded as a very important practice for all sorts of organisations. From the commercial end of the development spectrum, BPMS has been created for modelling business processes and workflows\cite{bpmsSpec}. \par%ISO standards, recommendations by governments, clearly something people should be using!
+
+Unfortunately, despite its usefulness, sociotechnical modelling remains very difficult. There are many aspects to this difficulty. For example, a sociotechnical system contains lots of detail, not all of which can be modelled all of the time. Vagueness in sociotechnical models is an example of something that remains difficult to accurately capture in a working model\cite{Herrmann1999}.\par
+
+Particularly difficult to model can be the minutia of a system. Small details can have a big impact on the system's state\cite{Crabtree2000}, which can make sociotechnical systems modelling difficult from an ethnographic perspective: how does one capture the uncertainty of human actors in a sociotechnical system? We might be able to create non-deterministic models of sociotechnical systems, or to create detailed sociotechnical systems that attempt to account for all possible actions, but it can be difficult to capture the smaller details about a system, on the level of human behaviour. Human behaviour can be uncertain in many different ways, and crucially, alters depending on the stresses the actors experience at any one time. \par
+
+Some people are modelling human uncertainty to some degree, but this often centres around the concept of vagueness of model instead of the uncertainty surrounding human behaviour. These approaches attempt to leave elements out of a model, rather than inserting a non-deterministic randomness that represents sociotechnical stress. Hermann \& al.\cite{Herrmann1999} are an example of vagueness in a model which allows for flexibility in the model's creation, but ultimately gets us no closer to modelling human unreliability. The concept of taking a model of the human behaviour and tweaking it seems to be unrealised as a research area. \par%We have people modelling *uncertainty* (Herrmann1999)
+
+This begs the question: what does a model of sociotechnical stress look like? Moreover, how might one compose the model and specify that sociotechnical stress? \par%What does a model of stress look like?
+
+This inspired a project to take a model of behaviour as intended as a blueprint of the realistic sociotechnical model, which is then made imperfect \emph{during} the simulation using some technique to alter the model. A technique to alter code already exists in the software engineering community -- process fuzzing, or code mutation -- and so utilising this for introducing alterations to a model might prove effective. \par%Maybe we can take a regular model as a blueprint of behaviour, and then make meaningful changes to the system to reflect the stress!    TODO: \cite{} some fuzzing origin?
+
+Code fuzzing is interesting because those edits made might represent \emph{changes in behaviour}, given we would be altering a program that represents the behaviour of some actors. However, this approach also raises some questions. For example, would it be feasible to represent an actor's workflow as a regular procedural program in a commonly known language? Furthermore, would this code fuzzing approach to simulating sociotechnical stress be particularly effective, or is another approach necessary? These questions construct the hypothesis of the project: 
+\begin{displayquote}
+Can code fuzzing feasibly be used to simulate stress within a sociotechnical model?
+\end{displayquote}%\par%Those changes would have to be edits to the behaviour
+
+
+\section{Aims}
+\label{aims}
+To test this hypothesis, three components will be required:
+\begin{enumerate}
+    \item Some model to fuzz
+    \item Some mechanism by which fuzzing can happen appropriately
+    \item Some examples of fuzzing that might represent sociotechnical stress
+\end{enumerate}\par%Whadda we wanna make?
+
+The fuzzing should be done in such a way as to represent sociotechnical stress on an ideal system, so attention should be paid to the type of fuzzing implemented and how it affects the code that makes the model. Many fuzzing systems employ fuzzing to source code which is then run, but because some procedural code will represent actions an actor performs multiple times, it may be the case that the fuzzing should occur during the running of the code, such that an "action" might have a different effect on the system when performed many times. The fuzzing technique might also want to account for the innumerable ways human actors can be unreliable, so a requirement of that fuzzing system might be that it be extensible to account for any arbitrary change to the workflow. An exploration of the tools that already exist and how they meet these requirements can be found in the research chapter of this dissertation\cref{research_head}. \par%What are the properties of that fuzzing?
+
+The models made to test the hypothesis should be made in a way that permits fuzzing in some meaningful way, and also makes the effect of the fuzzing on the system clear to some degree. The construction and constitution of the models made therefore affect the testing of our hypothesis. These models will therefore become a necessary component of the research, as they cannot reliably be taken from other sources, to ensure that their content and construction is suitable for the fuzzing methods implemented. We must be able to confirm that the fuzzing makes sense in our sociotechnical environment. \par%How important are the models we make for doing the fuzzing?
+
+Some other aspects of this project will require discretion. An example would be code fuzzing and the Halting Problem. Will it be possible to guarantee, after muation, that a model will execute? This might be the case if one is to assume an appropriately constructed model to begin with. A sociotechnical model which does not initially break might guarantee a code mutation that is valid. Moreover, we might want to build into our models some construct that allows for monitoring the sociotechnical environment such that we might alter the system's execution automatically, possibly fixing some halting problem issues if our simulation is getting notably out of hand. \par%(What else will we have to work on? Models? Types of fuzzing that might represent sociotechnical stress? Safety of fuzzed code?)
+
+As can be seen, lots of details affect the outcome of this project. Therefore, the main focus will be process fuzzing and the properties of the experiment that affect this, so as to more directly answer the hypothesis, which also has process fuzzing as its primary concern. \par%Lots of work to do!
+
+
+\section{Outline}
+\label{outline}
+Layout of dissertation with a little detail about each section TODO
+TODO
+TODO
+TODOTODO
+TODO
+TODO
+TODOTODOTODOTODOTODO
+TODO
+TODO
+TODO
+TODO
+TODO
+TODO
+TODO
+TODO
+TODO
+TODO
+TODO
+TODO
+TODO
+TODO

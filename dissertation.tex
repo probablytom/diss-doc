@@ -1,148 +1,41 @@
+% Notes for Tom:
+% \textsc{...} turns text into Tufte-esque small caps!
+
 \pdfoutput=1
 
 \documentclass[a4paper]{l4proj}
 \usepackage{fullpage}
 \usepackage{indentfirst}
+\usepackage{csquotes}
+\usepackage{cleveref}
+\usepackage{enumitem}
+
 
 \begin{document}
-\title{Code Fuzzing for Investigating Stress Points in Sociotechnical Systems}  % To be changed!
+\title{Code Fuzzing for Sociotechnical Variance}  % To be changed!
 \author{Tom Wallis}
 \date{\today}
 \maketitle
 
-\begin{abstract}
-\noindent Currently, testing a model of sociotechnical systems includes modelling the potential difficulties inherent in that system and observing the affects if the system isn't followed correctly. There are some advantages to this approach, as a human observer might be able to pick out mistakes a human actor might introduce into the system. However, this approach can be time consuming and inconsistencies can be introduced when a human models the same system multiple times. \par
-A better approach might be to automate the human error involved in the execution of the sociotechnical model. This dissertation suggests a method for modelling sociotechnical systems directly in executable code, and using code fuzzing to simulate human inconsistency as a component of the model. We then provide some example models with this human error built in, and show some example applications of the technique to compare real-world workflows with the actors of the system being taken into account. We also show that the technique works as intended, that it fills a necessary gap in the sociotechnical modelling field, and that the technique has lots of room for future development, though its connections to \(\pi\)-calculus and as a useful method in its own right. \par
-
-\end{abstract}
+\include{chapters/Abstract}
 
 \educationalconsent
 \tableofcontents
 
-\chapter{Introduction}
-\label{intro}
+\include{chapters/Introduction}
+\include{chapters/Motivations}
+\include{chapters/Research}
+\include{chapters/Tools_Created}
+\include{chapters/Evaluation}
+\include{chapters/Future_Work}
+\include{chapters/Conclusion}
 
-\section{Preliminaries}
-\label{preliminaries}
-%Sociotechnical systems are...
-%Models are...
-%Code fuzzing is...
-%Emergent behaviour in a sociotechnical system is...
-
-The project involves using a form of mutation testing called \emph{code fuzzing} to test models of sociotechnical systems under stress. Some definitions of terms used in this report: 
-\begin{itemize}
-\item \emph{Sociotechnical systems} are configurations of human actors and the technology they use. The human actors affect their environment and operate according to some workflow in an ideal case, though this workflow isn't always followed. This is due in part to the complexity of the system, and in part because the human actors do not exhibit reliable behaviour. Examples of sociotechnical systems are: \begin{itemize}
-\item Planes flown by pilots
-\item Teams of software developers
-\item A family organising a holiday online
-\item The same family booking their holiday through a travel website
-\end{itemize} 
-\item \emph{Stress} on a sociotechnical system is anything acting on the system which might make it change its behaviour; for example, a lack of money or conflict between actors. In particular, this project will be focusing on stresses which result in parts of the system's workflow being carried out without a part or many parts being completed. \par
-\item \emph{Mutation Testing} is the practice of modifying code and running it against tests to check how robustly the tests check the code's accuracy. Particularly, if the code is changed a little and the tests still pass, the tests may not catch incorrect behaviour in the code. \begin{itemize}
-\item \emph{Code Fuzzing} is a type of mutation testing which involves mixing lines of code up, removing lines, and truncating blocks of code, amongst other similar things. \par
-\end{itemize}
-\item The \emph{context} of a sociotechnical system can be considered its environment when it is practised. For example, the cities the actors reside within and the time the system is active at are both parts of the system's context.
-\end{list}
-
-
-
-\section{Terminology}
-\label{introducing_technology}
-In the context of this project, when \emph{atoms} refer to...
-In addition, the general model laid out in this project is composed of flow, atoms, ... which mean... the model therefore has the following hierarchical structure...
-
-\chapter{Motivations}
-\label{motivations}
-Difficulty of creating sociotechnical systems to test
-Because of emergent behaviour in the sociotechnical system, testing is difficult...
-Learning from testing with software engineering...
-
-
-\section{Aims}
-\label{aims}
-Actual focus of the project...
-Intended outcome/areas of results of interest...
-
-
-\section{Outline}
-\label{outline}
-
-
-\chapter{Research}
-\label{research_head}
-\section{Fuzzing}
-\label{research_fuzzing}
-Because the systems we were interested in creating were to be self-documenting, we chose Python as a language to write our models in. Python's clarity combined with the ease of quickly writing working Python code meant that self-documenting models could be feasibly made. In addition, Python supplied language features such as decorators and a built in Abstract Syntax Tree library that made it an ideal candidate. \par
-We therefore set about finding appropriate fuzzing libraries in Python, and found several:
-\subsection{Sulley}
-\label{fuzzing_sulley}
-Sulley is a fuzzing library for Python which is popular for remote application and protocol fuzzing. Sulley alters the protocol by which it inserts data into an application or system, and observes how that application reacts to the altered input, to simulate problems with networks and human users. It is under active development, and is open sourced.\par
-While using a popular, open-source library for inspiration when creating our own mutation system, Sulley was inappropriate for our needs.\par
-Sulley fuzzes by way of changing protocols and inputs to some system it interacts with. We felt that altering inputs to that system lacked the degree of control that changing workflows directly would provide. Technically, it would be possible to get around this problem by creating models in some remote program that took instructions from some fuzzed input, but we felt that this additional degree of abstraction would lower the self-documenting nature of our models and would be an impractical modelling technique anyway. \par
-
-\subsection{Fusil}
-\label{fuzzing_fuzil}
-Fusil was another fuzzing library that was investigated. Fusil allows for fuzzing the environment of a python program, which made it appealing to us. While environmental factors impact the sociotechnical model however, these factors are unrelated to the properties Fusil is capable of monitoring. \par
-Fusil is able to create mangled files as fuzzed/invalid input to a program, monitors and limits CPU and memory usage, and checks logs for system errors and other signs that a fuzzed program was not functioning correctly under adverse circumstances. This seemed appealing, because monitoring performance under adverse circumstances is precicely our goal in this project. \par
-Unfortunately Fusil also did not meet our requirements: it monitors the effect of a change in computational environment on a program, where we are interested in the effect of the change of a social environment on a workflow. While our workflows are being modelled as programs, this does not mean that the workflows themselves would be being altered, so stress on a sociotechnical system still wouldn't be being modelled. Fusil was a further worse choice when taking into account the fact that we would not be able to pinpoint the errors that were being introduced by observing memory and CPU usage, and other computational concerns. \par
-Therefore, we could not use Fusil as our fuzzing system of choice. \par
-
-\subsection{MutPy}
-\label{fuzzing_mutpy}
-
-\subsection{PyMuTester}
-\label{fuzzing_pymutester}
-
-\section{Planning and things learned from research}  % This needs a better name, for certain! Is it even needed?
-\label{planning_head}
-
-\chapter{Implementation}
-\label{implementation_head}
-
-\section{Model Outline}
-\label{model_outline}
-
-
-
-\chapter{Experimental Results}
-\label{experimental_results}
-
-
-\chapter{Evaluation}
-\label{evaluation}
-
-\chapter{Future Work}
-\label{semantics}
-\section{A mathematical sociotechnical model}
-One piece of work which could be undertaken in the future would be to use the principles from this model to create a mathematically rigorous sociotechnical model. This alternative model would be parametrised by the outputs of the procedural model described through this dissertation. 
-\subsection{Parametrisation}
-Sociotechnical models have few to no concrete definitions in place. As a result, it can be difficult to discuss the properties of sociotechnical systems, as different people refer to different things. \\
-However, the emergent properties of sociotechnical systems arise from two places:
-\begin{itemize}
-\item The generally deterministic running of the technical aspect of a system, which can break unexpectedly, leading to chaotic results
-\item The seemingly random behaviour of the social component of the system, which leads to unpredictability by definition
-\end{itemize}
-However, using the atomic layer structure used to create the sociotechnical systems for these experiments, one could parametrise sociotechnical systems into properties of the social and technical aspects, which in turn have their own parameters to be defined.\\
-Defining all of these relevant parameters would allow for characterisation of each sociotechnical atom by its affect on the different sociotechnical parameters, rather than they system's environment. As a result, each atom becomes a function which modifies values within the dimensions of the defined parameters. 
-
-\subsection{Functions mapping to sociotechnical space}
-If each atom modifies values within some sociotechnical dimensions, we can characterise an atom by specifying how it maps between points in sociotechnical space.\\
-A natural extension of this is that flows can be defined by the composition of atoms' functions, such that all activities within the atomic layer model can be described as some mapping from one set of states within the sociotechnical space to another.\\
-As a result, the ideal case described by a given sociotechnical layer model can be represented mathematically as a set of functions. However, the stress testing used to identify anomalies in sociotechnical systems then becomes alterations to this set of functions. One could, in fact, specify these alterations along these same sociotechnical dimensions, as these are the only values being changed. \\
-Therefore, the output of testing the atomic model becomes a function space, where every point in the space is a behaviour characterised by how its emergent properties diverge from the properties of the ideal case. Moreover, this makes behaviour change a function mapping between points in the sociotechnical function space. The mapping of the behaviour change function is equivalent to the output of that change as modelled by code fuzzing, meaning that the fuzzing tools described in this dissertation is implicitly a tool for exploring this model.
-
-\subsection{Creating a mathematically rigorous sociotechnical model}
-\label{rigorous_sociotechnical_model}
-Some future work to propose could be a realisation of this mathematical representation of a sociotechnical system. Defining mathematics and terms for the model would be an important step toward creating a single model for sociotechnical systems which can be analysed, for which tools are already available, and which unifies the jargon in the field such that researchers can discuss sociotechnical systems without the risk of ambiguity. 
-
-\chapter{conclusion}
-\label{conclusion}
 
 %\begin{appendices}
 %
 %\end{appendices}
 
-%\bibliographystyle{plain}
-%\bibliography{bibtex_file}
+\bibliographystyle{plain}
+\bibliography{library.bib,additional.bib}
 
 \end{document}
