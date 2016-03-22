@@ -13,14 +13,21 @@ The latter two being tools required to create the first one. Therefore, to test 
 \label{model_outline}
 The modelling system was designed to make both creating and fuzzing models easy. As no modelling systems in the research phase were found to be adequate for the project, a new one had to be designed from scratch.\par
 This modelling system needed to have a few traits. As a result of it being written by hand, and being a full sociotechnical model in programming code, the language used had to be very human readable. In addition, the language needed to have easy and accessible tools for creating fuzzing libraries. Also, this language needed to be easy to create relatively complex models in, so the language itself needed to be easy to use. Lastly, a well known language was a major selling point, as people writing models would need to know the language. In this scenario, the models were being made for the dissertation project, and there was insufficient time to learn a new language for modelling over and above creating the fuzzing libraries. Only one language -- Python -- met these criteria, so Python was the language chosen to create models in. \par%Modelling system goals
+
 Currently, tools such as Eclipse Modelling Framework\cite{EMFManual} can create code from a UML diagram, so basing the models on UML seemed sensible; in the future, large parts of model creation in this format might be automated, because a graphical representation can be converted into a procedural model for the fuzzing technique. As a result of the project's heavy focus on workflow modelling, UML Activity Diagrams\cite{Omg2010} were chosen as a representation of workflow. UML Activity diagrams have long been a common way to represent workflow models\cite{Gogolla2001}. As a result of the simplicity possible in the models created to test the hypothesis, a complete adaptation of the UML specification for Activity Diagrams to Python code was not pursued. Instead, determining how to adapt basic flow structures from Activity Diagrams was all that was required to create sufficiently complex models to test the hypothesis. More complex adaptations of the UML Activity Diagram specification, such as concurrent activity with fork and join notations, is discussed in the Future Work section. \par%Basis in UML Activity Diagrams
+
 \subsection{Layer Model}%Different layers
 To separate concerns and make fuzzing safer and easier, two critical concerns were separated in the model creation section: the flow of work, and that work's effect on its sociotechnical environment. \par
+
 \subsubsection{Flow Layers}
 It was identified that descriptions of work were generally given on a high level, and broken down to finer detail when probed when models were considered at the beginning of the research. As a result, it made sense to regard certain patterns of work as sub-workflows that are chained together by some overarching workflow. \par
+
 Furthermore, there was no reason why these sub-workflows could not be nested to a fine degree of detail. It was determined that any "flow" of work does not affect the sociotechnical environment in-and-of itself, but that it simply dictates the order in which the effects of sociotechnical work are introduced to a system. At the finest grain of detail for a given model, another component, called "atoms", affect the sociotechnical environment and these are chained together by the flows to create meaningful workflows. \par
+
 A flow of work can also be considered a collection of connected nodes on a UML Activity Diagram. These areas of work are small operations that are, in real life, broken down into smaller tasks, but finer detail is still needed to accurately model the sociotechnical detail\cite{Crabtree2000}. \par
+
 Where this fine detail becomes important is in creating a model structure appropriate for fuzzing. If we want to introduce code fuzzing when actors perform a particular activity, it is important to be able to target that particular activity as a subsection of the whole model and isolate that activity. Such scenarios could be the case where an actor is a newly trained employee and is likely to miss a step in a certain process they were badly trained in. In this case, we might expect them to successfully complete the rest of the model, but to occasionally skip a node in a sociotechnical flow and move straight into its successor. This can be done by isolating the activities a sociotechnical flow is made of, creating each minor activity (the \emph{atoms} described below), and chaining them together into some code which is to be marked as fuzz-able.\par
+
 Flows are to be made from a high-level perspective, and then broken down into sub-components until a model of sufficient detail is constructed. This way, one can construct a model in a natural way: considering the activities people perform on a day-to-day basis and drilling down to finer detail over time. For example, one might describe the waterfall method of software engineering, after requirements gathering, as: 
 \begin{itemize}
     \item Implementing features
@@ -35,6 +42,25 @@ def waterfall_implementation():
     unit_test()
     integration_test()
     ua_test()
+\end{pyglist}
+
+When we break down one of these steps in the larger workflow, we get a more fine-grained view of what "unit testing" entails:
+\begin{pyglist}[language = python, encoding = utf8]
+def waterfall_implementation():
+    implement_features()
+    unit_test()
+    integration_test()
+    ua_test()
+
+# Descriptions of model created and environment module below
+def unit_test():
+    for chunk_of_code in environment.resources["features"]:
+        if chunk_of_code.test is None:
+            create_test_for_chunk(chunk_of_code)
+    run_tests()
+    while not environment.resources["unit tests passing"]:
+        fix_codebase()
+        run_tests()
 \end{pyglist}
 
 %Flows are to be made from the top down
