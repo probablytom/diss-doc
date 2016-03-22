@@ -28,7 +28,7 @@ A flow of work can also be considered a collection of connected nodes on a UML A
 
 Where this fine detail becomes important is in creating a model structure appropriate for fuzzing. If we want to introduce code fuzzing when actors perform a particular activity, it is important to be able to target that particular activity as a subsection of the whole model and isolate that activity. Such scenarios could be the case where an actor is a newly trained employee and is likely to miss a step in a certain process they were badly trained in. In this case, we might expect them to successfully complete the rest of the model, but to occasionally skip a node in a sociotechnical flow and move straight into its successor. This can be done by isolating the activities a sociotechnical flow is made of, creating each minor activity (the \emph{atoms} described below), and chaining them together into some code which is to be marked as fuzz-able.\par
 
-Flows are to be made from a high-level perspective, and then broken down into sub-components until a model of sufficient detail is constructed. This way, one can construct a model in a natural way: considering the activities people perform on a day-to-day basis and drilling down to finer detail over time. For example, one might describe the waterfall method of software engineering, after requirements gathering, as: 
+Flows are to be made from a high-level perspective, and then broken down into sub-components until a model of sufficient detail is constructed. This way, one can construct a model in a natural way: considering the activities people perform on a day-to-day basis and drilling down to finer detail over time. To take the example of the model implemented later in this report, one might describe the agile method of software engineering, after requirements gathering, as:
 \begin{itemize}
     \item Implementing features
     \item Unit testing
@@ -37,50 +37,74 @@ Flows are to be made from a high-level perspective, and then broken down into su
 \end{itemize} \par
 Which, as a flow, might look like this:
 \begin{pyglist}[language = python, encoding = utf8]
-def waterfall_implementation():
-    implement_features()
+def implement_feature():
+    make_new_feature()
+    create_test_and_code()
     unit_test()
     integration_test()
-    ua_test()
+    user_acceptance_test()
 \end{pyglist}
 
 When we break down one of these steps in the larger workflow, we get a more fine-grained view of what "unit testing" entails:
 \begin{pyglist}[language = python, encoding = utf8]
-def waterfall_implementation():
-    implement_features()
+def implement_feature():
+    make_new_feature()
+    create_test_and_code()
     unit_test()
     integration_test()
-    ua_test()
+    user_acceptance_test()
 
 # Descriptions of model created and environment module below
 def unit_test():
-    for chunk_of_code in environment.resources["features"]:
-        if chunk_of_code.test is None:
-            create_test_for_chunk(chunk_of_code)
     run_tests()
     while not environment.resources["unit tests passing"]:
-        fix_codebase()
+        fix_recent_feature()
         run_tests()
-\end{pyglist}
+\end{pyglist}\par
+Now, if one wanted to mutate unit testing but wanted to assume that feature implementation, integration testing, and user acceptance testing were to be reliably executed, the modeller would only need to mutate the unit\_test\(\) function. \par
+In this way, the models are suitable for fuzzing, while keeping the flow of activity easy to read. In addition, models can be edited and maintained easily, as any large blocks of code are indicators that a flow can be broken down to smaller components. \par
+\todo{Image showing sections of an activity diagram and how it would transform to flows?}
 
-%Flows are to be made from the top down
-% - Little detail being drilled down to fine-grained detail
-% - The lowest level of detail is not broken down further, so it's "atomic"
-% - The greater grain of detail is a flow, chaining these "atoms" together. 
-% - Any flow or sub-flow should be targetable as a mutatable construct
 \subsubsection{Atom Layers}
+Atoms are the finest grain of a model's detail. Therefore, if an action cannot be broken down into smaller activities, that action is an atom --- so named because they cannot be broken down further --- and are called by flows to enact change on the sociotechnical environment. \par
+The distinction between atoms and flows that makes them separate layers is that flows make calls to other flows or atoms, but \emph{cannot} change the sociotechnical environment. This is because the order itself of an activity does not affect a sociotechnical environment; the actions of actors in a sociotechnical system do. Therefore, atoms are the only level of detail that should affect the sociotechnical environment. \par
+When changing a sociotechnical environment, we alter its state, which internally in a simulation is to alter values held -- to write to a variable. However, to read the values in those variables is to make decisions which are informed by the current state of the sociotechnical system. This is necessary for flows. Therefore, we make a distinction between reading from and writing to a variable: \emph{only atoms are allowed to write to sociotechnical state}. Both atoms and flows may read the sociotechnical state. (The above example of a flow does this in evaluating `environment.resources["unit tests passing"]`.)\par
+While atoms can change the sociotechnical environment, they should never call another atom. This is because that atom's affects on its environment are specific to the activity it represents; to run another atom after the current atom would represent a small sub-workflow, which is the domain of flows. \par
+Doing this separates the concerns of the two layers, which, while useful for fuzzing purposes, also serves to make the systems more maintainable. Any problems with sociotechnical environment would be an issue with the atoms, and any problem with the ordering of activity or flow of action would be an issue with the flows. The concerns can also be split across multiple files, further improving maintainability and making the creation of a system which represents the real world easier. \par
+As a result of this distinction, another should be drawn: atoms cannot be mutated. This is because the mutation we enact is on \emph{workflow}, whereas atoms are \emph{activities}. The distinction is similar to that between actions we choose to do and physics itself: we are bound by the laws of physics and cannot change this element of our environment, but we can change the things we do within these laws of physics. Similarly, sociotechnical atoms are the physics of the workflow; they shouldn't be changed, because if one does things in the wrong order or forgets to act in certain ways, it cannot affect the effect it has on its environment. Therefore, every action an actor can perform is its own sociotechnical atom, and an action's affects on its environment do not change. An example of this would be unit testing: if a programmer writes a test, that test is written and is a component of his sociotechnical environment. However, he might forget to write a test; this is a change to his workflow, so it is represented as a mutation in the workflow layer. \todo{REPHRASE?} \par
+To extend the above example to include an atom, create\_test\_tdd\(\), too:
+\begin{pyglist}[language = python, encoding = utf8]
+#An example flow, does not affect environment
+def implement_feature():
+    make_new_feature()
+    create_test_and_code()
+    unit_test()
+    integration_test()
+    user_acceptance_test()
 
-% - Atoms
-% - Flows
-% - Unit tests/simple code to execute a model
-% - Environment
-%A
+#An example flow, does not affect environment
+def unit_test():
+    run_tests()
+    while not environment.resources["unit tests passing"]:
+        fix_recent_feature()
+        run_tests()
 
-\subsubsection{Sociotechnical Environment}
-% Really just a component of the model
-% Explain the one implemented in the example models as an example
+#An example flow, does not affect environment
+def create_test_and_code():
+    create_test_tdd()
+    add_chunk_tdd()
+    
+#An example Atom, directly affects environment
+def create_test_tdd():
+    environment.resources["time"] += 1
+    test = dag.Test()
+    environment.resources["tests"].append(test)
 
-\subsubsection{Executing a model}
+\end{pyglist}\par
+As can be seen, the atom in this example affects the environment of the model in two ways: the activity takes time, incrementing a counter, and a test is created and appended to a list of tests the model is aware of. However, the flows in the model never affect sociotechnical state, and the atom never calls another atom. 
+
+\subsubsection{Creating a model}
+The final component of a model is the environment itself. This completes the sociotechnical system, as we only distinguish between the sociotechnical environment and its  \par
 
 \section{Fuzzing Library}
 \label{planning_fuzzing_implementation} % Cass points out that I don't mention why I don't use a language other than Python. Worth discussing here
