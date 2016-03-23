@@ -4,13 +4,19 @@
 \pdfoutput=1
 
 \documentclass[a4paper]{l4proj}
+\usepackage[utf8]{inputenc}
 \usepackage{fullpage}
 \usepackage{indentfirst}
 \usepackage{csquotes}
 \usepackage{cleveref}
+\usepackage{float}
 \usepackage{enumitem}
 \usepackage{verbments}
 \usepackage[usenames, dvipsnames]{color}
+
+\crefformat{section}{§#2#1#3}
+\crefformat{chapter}{§#2#1#3}
+\crefformat{figure}{Figure #2#1#3}
 \newcommand{\todo}[1]{\colorbox{BurntOrange}{\color{White}{\textsc{TODO: #1}}}}
 
 \begin{document}

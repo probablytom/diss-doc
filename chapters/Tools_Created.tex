@@ -45,7 +45,7 @@ def implement_feature():
     user_acceptance_test()
 \end{pyglist}
 
-When we break down one of these steps in the larger workflow, we get a more fine-grained view of what "unit testing" entails:
+When we break down one of these steps in the larger workflow, we get a more fine-grained view of what "unit testing" entails:\label{small_code_sample}
 \begin{pyglist}[language = python, encoding = utf8]
 def implement_feature():
     make_new_feature()
@@ -72,7 +72,7 @@ When changing a sociotechnical environment, we alter its state, which internally
 While atoms can change the sociotechnical environment, they should never call another atom. This is because that atom's affects on its environment are specific to the activity it represents; to run another atom after the current atom would represent a small sub-workflow, which is the domain of flows. \par
 Doing this separates the concerns of the two layers, which, while useful for fuzzing purposes, also serves to make the systems more maintainable. Any problems with sociotechnical environment would be an issue with the atoms, and any problem with the ordering of activity or flow of action would be an issue with the flows. The concerns can also be split across multiple files, further improving maintainability and making the creation of a system which represents the real world easier. \par
 As a result of this distinction, another should be drawn: atoms cannot be mutated. This is because the mutation we enact is on \emph{workflow}, whereas atoms are \emph{activities}. The distinction is similar to that between actions we choose to do and physics itself: we are bound by the laws of physics and cannot change this element of our environment, but we can change the things we do within these laws of physics. Similarly, sociotechnical atoms are the physics of the workflow; they shouldn't be changed, because if one does things in the wrong order or forgets to act in certain ways, it cannot affect the effect it has on its environment. Therefore, every action an actor can perform is its own sociotechnical atom, and an action's affects on its environment do not change. An example of this would be unit testing: if a programmer writes a test, that test is written and is a component of his sociotechnical environment. However, he might forget to write a test; this is a change to his workflow, so it is represented as a mutation in the workflow layer. \todo{REPHRASE?} \par
-To extend the above example to include an atom, create\_test\_tdd\(\), too:
+To extend the above example to include an atom, create\_test\_tdd\(\), too:\label{large_code_sample}
 \begin{pyglist}[language = python, encoding = utf8]
 #An example flow, does not affect environment
 def implement_feature():
@@ -104,7 +104,10 @@ def create_test_tdd():
 As can be seen, the atom in this example affects the environment of the model in two ways: the activity takes time, incrementing a counter, and a test is created and appended to a list of tests the model is aware of. However, the flows in the model never affect sociotechnical state, and the atom never calls another atom. 
 
 \subsubsection{Creating a model}
-The final component of a model is the environment itself. This completes the sociotechnical system, as we only distinguish between the sociotechnical environment and its  \par
+The final component of a model is the environment itself. This completes the sociotechnical system, as we only distinguish between the sociotechnical environment and the workflow that exists within it. As a result, the larger sociotechnical environment should not be subject to mutation either. \par
+The sociotechnical model created can, of course, be anything and of arbitrary complexity. A benefit of using Python for model creation is that creating complex information systems in it is relatively easy due to its simple syntax and clean formatting. While a domain specific language might be more useful for this section of the code, as previously discussed, an ordinary procedural language was required for building the fuzzing library and models to test it. \par
+Because the environment itself will be driven entirely by the atoms created, it should not be required to create any sections of the environment programmatically. Instead, classes and variables needed are represented in some format that is global to all files the model is composed of. This way, the same environment is in the scope of all atoms and all flows involved in a model. In the example model created, this was the "environment" module. Classes it uses are kept in a module called 'dag', because the model created has a component which is a Directed Acyclic Graph. \par
+An example model can be found in the Evaluation section \cref{evaluation}. \par
 
 \section{Fuzzing Library}
 \label{planning_fuzzing_implementation} % Cass points out that I don't mention why I don't use a language other than Python. Worth discussing here
@@ -126,3 +129,16 @@ The final implementation of the fuzzing library was deemed to meet these require
     \item Allowed for flexible mutation on the part of the modeller due to the parametrised mutation behaviour
     \item \emph{Crucially}, real-time mutation due to the mutations being carried out and subsequently executed in the decorator, and that variant function being run rather than the function called.
 \end{enumerate} \par
+
+\subsection{Difficulties Involved}
+\subsubsection{Python code caching}
+When creating mutants and executing them, functions began running only their mutated versions and never mutating a second time. \par
+It was found that this was because Python kept some internal cache of the functions run, as \emph{Function} objects. \emph{Function} objects have an attribute that represents their code compiled into the Python interpreter's internal virtual bytecode, and another that represented all of the decorators attached to the function upon its definition. \par
+When a decorated Python function is run, the function's \emph{Function} object is passed into the wrapping function, which in the case of our fuzzing library was our mutation function. Therefore, to prevent passing the function down tot he mutator in an infinite recursive loop the mutation library must remove decorating functions such as the mutation decorator from the newly generated functino. In doing this, a new function is created and run, but has the same name; this overwrote the Python interpreter's cache of function objects it had compiled, with mutated bytecode and no attached decorators. When the flow was run again, the Python interpreter ran a precompiled function with no decorators to mutate again, and the same mutation ran each subsequent call to this flow. \par
+To overcome this, the name of the function within the source of the mutant was mutated in a predictable way, and the new function name was ran after mutation. This gave a new function object in the Python internal cache that could repeatedly be overwritten by new mutants, without being called directly by flows which intended to call a newly mutated function. \par
+
+\subsubsection{Python built-in libraries returning unreliable information}
+When creating mutated versions of an original function, the source of that function must be retrieved so that an Abstract Syntax Tree of the code can be generated. Fortunately, Python's built in \emph{inspect} library automatically does this, meaning that source code could be retrieved from a single line using the function object passed to the mutation decorator. \par
+Unfortunately, the function call appears to fail after the first call for each function object, returning the declaration of the first function from the correct file every call to \emph{inspect} after the first call with that function object. \par
+While the root cause of this could not be successfully established, caching the results of each function call was sufficient for keeping the relevant source code. \par
+Should this library be extended or improved and Python to continue being used, this would be a valuable line of enquiry for creating a more stable platform.\par
