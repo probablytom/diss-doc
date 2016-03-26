@@ -4,7 +4,9 @@
 
 \section{Building an example model}
 To confirm that the modelling system was adequate for the task, and to test the hypothesis laid out, the third required component of the project was constructed: an example model to be used to test the hypothesis. \par
+
 \cref{fig:example_flows} shows how a workflow would begin to be developed using very simple Activity Diagrams as flows that are linking together. After all of the flows needed are broken down, any node on any flow that does not represent another flow (or the current flow itself, if the flow is recursive) would be an atom with activity that should be obvious by its name. \par
+
 Two example models were built for the purposes of testing this hypothesis. They both modelled software development teams that adhered to some commonly used software development methodology. However, while one is a traditional Waterfall software development strategy as defined by the US Department of Defence in their original DOD-STD-2167A specification\cite{DEPARTAMENTOFDEFENSE1984}, the other is an Agile methodology, designed to fix many of the issues perceived to exist in the old Waterfall standard. Particularly, the Test Driven Development (TDD) methodology intends to fix the problem that exists when many bugs exist in a Waterfall system. The TDD method writes tests that nominally represent the functionality of a chunk of code, and subsequently write that code until the code passes the test, as can be seen in the full Activity Diagram for the TDD methodology in \cref{fig:agile_workflow}. \par
 
 \begin{figure}[p]
@@ -23,11 +25,14 @@ Two example models were built for the purposes of testing this hypothesis. They 
 
 \subsection{Building flows}
 Constructing the flows was as simple as following the understanding of the system from a high-level, not particularly detailed perspective, and drilling down on each individual node of the high-end view until more detail was extracted. In this way, the full TDD workflow that can be found in \cref{fig:agile_workflow} was built from the first flow which can be found at \cref{fig:example_flows}. This allowed very fast prototyping of the sociotechnical system in a manner which could be ported from the Activity Diagram to Python code very quickly. \par
+
 As was noted in \cref{pictorial}, UML diagrams can be programmatically transformed into executable skeleton code with ease. In this way, converting the model to code ready for fuzzing would be even easier than it already is in the future. \par
+
 This procedure was carried out for both the agile and waterfall workflows. 
 
 \subsection{Building atoms}
 Once flows were successfully built, all nodes on the Activity Diagrams that did not have a definition as another must be defined as atoms. Therefore, after the flows had been written as python programs, every function call that had no definition was indicated by the IDE, making the remaining work easy to spot. The errors in the flows were solved by creating the relevant atoms, together with the environment necessary to facilitate their effects, and the sociotechnical models were complete. \par
+
 The sociotechnical environment was implemented as a Directed Acyclic Graph in the form of four different class definitions. Objects constructed from these classes were kept in a dictionary alongside some boolean flags and values which were used throughout the model, for modifying the program's behaviour and signalling things like tests passing to the rest of the model. \par
 
 \subsection{Mutating the models}
@@ -59,6 +64,7 @@ def unit_test():
         run_tests()
 \end{pyglist}\par
 Mutating specific functions proved very easy with the system derived. The mutations could be directed to a specific workflow, was easy to write, and was also human-readable, particularly where it mattered in the flow definition.\par
+
 Once concern was that, if a mutation function was convoluted or required complex logic to construct, it might be very easy to break the mutation library with a small bug. Another mutation function was then written to see whether anything complex would arise from deadlines being tight within a sociotechnical system:
 
 \begin{pyglist}[language = python, encoding = utf8]
@@ -81,15 +87,30 @@ As can be seen, the additional mutation function was exactly as long and no more
 
 \section{Running a model}
 Running a model was as simple as writing simple unit tests that call the highest-order function of the models created, because of the construction of the models according to the modelling system. \par
+
 This is a result of the top-down approach to the sociotechnical model design. A side-effect of the full workflow being the first thing to be defined was that this first function can be run to run the whole sociotechnical system. An additional flow was added for testing purposes which implemented 50 features according to each methodology rather than just one, as this way the effects of the variance in the system would be more pronounced and therefore easier to detect. Naturally, this was very easy to implement, as it was simply a repetition of the main workflow.\par
 
 \subsection{Carrying out experiments on the models}
 The flows were run within a series of unit tests that confirmed that the sociotechnical environment was being affected in some way that made sense for the models that were constructed, with a flag to trigger mutations turned off. To confirm that the outcomes were not the results of the random seed at the time, the random seed was set as a variable in the sociotechnical environment.\par
+
 Similar unit tests were then run with the environment turned off and turned on separately, so as to compare the effect of mutating each model. A method was implemented in each model to reset its sociotechnical environment to some base state, which meant that a model could be run indefinitely many times in the same unit test. \par
+
 Once the mutation library was verified to be working, a unit test was constructed that ran each model twice --- once mutated, and once in its unmodified state --- and calculated the difference in the time each model took to implement 50 features when put under stress in its unit testing phase. The difference was then compared between the two executions of the models. \par
+
 If the delta in time taken was less for the agile model than it was for the waterfall model, it would be confirmed that influencing the models using code fuzzing was having the intended effect, as an agile flow should operate better than a waterfall method when put under sociotechnical stress. The unit test was thus written so that it would pass if this was true, indicating that the experiment's hypothesis was validated. \par
+
 When the test was run, it passed, validating the experiment. \par
 
 
 \section{Evaluating the tools used}
+The tools performed well in reducing complexity and applying variance to the sociotechnical system. They also made the creation of the sociotechnical system straightforward, as the activity diagram is a very natural way to represent workflow. \par
 
+The representation of workflow also felt quite natural as a format for constructing a sociotechnical system. This was likely a side effect of the fuzzing library's focus on the mutation of sociotechnical workflow, as the project was being approached from the perspective that workflow was the most important component of the sociotechnical model. \par
+
+Other models, such as responsibility modelling, would not fare as well being represented as a UML Activity Diagram. However, as a result of code fuzzing working to inject sociotechnical variance into a workflow model, it might be that a similar tactic would work for injecting variance into alternative models such as responsibility modelling. Another angle that may allow the code fuzzing technique to apply to modelling systems like Responsibility Modelling would be to generalise the procedural modelling system to represent a wider range of model focuses. However, this angle may be a more difficult approach than writing another fuzzing system for that type of model specifically. \par
+
+Building the models did not take much time. After the fuzzing system was created the original model created needed rewriting for additional detail; this was little effort, as a result of the separation of concerns between atoms and flows, as it meant that details of the modelling problem could be separated and solved individually and recombined later for a better overall model. \par
+
+On a similar note, a benefit of this sociotechnical modelling tactic is that the atoms and flows can be removed from each other. Therefore, a large library of well tested atoms could be kept in an organisation that built sociotechnical models, and these atoms could be reused for any model which used the same atoms. This is another corollary of the atoms-as-physics idea discussed earlier, as the activities an actor might perform cannot change from model to model, because the actions are the same. Therefore, with a reconfigured environment and with different flows connecting the atoms together, a sociotechnical system could be built even easier by simply creating UML Activity Diagrams and representing them as flows that connect pre-written models. From the experience of writing and rewriting the models from the experiments, it could be confirmed that the creation of the models' atoms was the most time-consuming part of the exercise, even considering that the models shared many atoms. \par
+
+One issue with the modelling system as it stands was that only one actors could be modelled from the UML diagram. A more robust methodology for moving a UML Activity Diagram to a procedural workflow, such as taking into account Fork and Join operations, would help with this. This is discussed in the chapter on future work (\cref{concurrent_modelling}). \par

@@ -2,10 +2,28 @@
 \label{conclusion}
 
 \section{Discussion}
+The modelling system works as intended, and allows the fuzzing library to show that sociotechnical stress can indeed be simulated using code fuzzing. The library worked particularly well in that configuring and using it is very easy, and the mutation creation itself is simple and fast. \par
 
+Another pleasant note on the fuzzing library is that creating a code fuzzing representation of any sociotechnical stress is easy to do. A single function that receives and returns a list of line objects is all that is required for the fuzzing library to operate successfully. In this way, infinitely many versions of sociotechnical variance can be made and implemented. This makes the library very flexible, and allows future work to be implemented much easier as a result of not relying on built-in options that need to be modified for a researcher's purposes. \par
+
+Realistically, any system which has a need for sociotechnical variance and models using workflows should be able to use a variant of this tool, rewriting it to traverse ASTs of the desired language. Any non-AST version of the code might not be safe, as ASTs are the commonly used format for code fuzzing and mutation testing in the wild, as seen in MutPy\cite{MutPy26:online} and PyMuTester\cite{GitHu12:online}. \par
+%Mention: Nice that the fuzzing library allows for any arbitrary modification to be made to a system after the modelling. For example, we might want to come back to a model after two years and test another sort of stress; we can do this simply by creating another mutation function to represent that stress and applying it to the "blueprint" appropriately.
 
 \section{Conclusion}
+The result of testing the hypothesis was that the experiment was a success. Sociotechnical stress can feasibly be modelled using code fuzzing. \par
 
+The needs for a sociotechnical system which can have stress inserted in a clean, readable way was met by the combination of a modelling system made for workflow modelling, and a fuzzing system that was very flexible. \par
+
+The tools made seem genuinely useful, particularly the fuzzing library. The fuzzing library's flexibility should make it useful for future work on this and related projects. Making a full mutation testing system for Python code using the technique would also be interesting to do, as no mutation testing library could be found that mutated code upon each function call in the way that this library does. \par
+
+Fortunately, the models used to test the system showed that variance was introduced in a way we might expect from the sociotechnical variance we introduced. This conclusively prove the hypothesis. \par
+
+However, just because the technique \emph{can} be feasibly used doesn't mean that it can be used in its \emph{current state}. More research is needed now to produce a fully fledged modelling system from this technique, as discussed in the previous chapter (\cref{future_work_head}). \par
 
 \section{Personal Reflection}
+%Interesting that sociotechnical modelling can learn from software engineering
+It is interesting to me that sociotechnical modelling can learn so much from software engineering. Truth be told, the two fields aren't terribly far apart --- closer than, say, sociotechnical modelling and knitting --- but this still goes to show that differing fields can learn from each other in surprising ways. \par
 
+The success of the technique is satisfying, because it appears to be very useful. Variance as its own concept seems to be something that many different modelling frameworks in many different fields need for a range of purposes. Variance has a different purpose depending on the focus of the model. Ultimately, it appears to be a very useful tool for introducing uncertainty and non-determinism into an otherwise static, deterministic model. The fact that Python allows this to be done in a clean, readable way is pleasing. \par
+
+I am very happy with the result of the project. \par

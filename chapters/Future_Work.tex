@@ -1,44 +1,86 @@
 \chapter{Future Work} % For later!
-\label{semantics}
-\section{A mathematical sociotechnical model}
-One piece of work which could be undertaken in the future would be to use the principles from this model to create a mathematically rigorous sociotechnical model. This alternative model would be parametrised by the outputs of the procedural model described through this dissertation. 
-\subsection{Parametrisation}
-Sociotechnical models have few to no concrete definitions in place. As a result, it can be difficult to discuss the properties of sociotechnical systems, as different people refer to different things. \\
-However, the emergent properties of sociotechnical systems arise from two places:
-\begin{itemize}
-\item The generally deterministic running of the technical aspect of a system, which can break unexpectedly, leading to chaotic results
-\item The seemingly random behaviour of the social component of the system, which leads to unpredictability by definition
-\end{itemize}
-However, using the atomic layer structure used to create the sociotechnical systems for these experiments, one could parametrise sociotechnical systems into properties of the social and technical aspects, which in turn have their own parameters to be defined.\\
-Defining all of these relevant parameters would allow for characterisation of each sociotechnical atom by its affect on the different sociotechnical parameters, rather than they system's environment. As a result, each atom becomes a function which modifies values within the dimensions of the defined parameters. 
+\label{future_work_head}
 
-\subsection{Functions mapping to sociotechnical space}
-If each atom modifies values within some sociotechnical dimensions, we can characterise an atom by specifying how it maps between points in sociotechnical space.\\
-A natural extension of this is that flows can be defined by the composition of atoms' functions, such that all activities within the atomic layer model can be described as some mapping from one set of states within the sociotechnical space to another.\\
-As a result, the ideal case described by a given sociotechnical layer model can be represented mathematically as a set of functions. However, the stress testing used to identify anomalies in sociotechnical systems then becomes alterations to this set of functions. One could, in fact, specify these alterations along these same sociotechnical dimensions, as these are the only values being changed. \\
-Therefore, the output of testing the atomic model becomes a function space, where every point in the space is a behaviour characterised by how its emergent properties diverge from the properties of the ideal case. Moreover, this makes behaviour change a function mapping between points in the sociotechnical function space. The mapping of the behaviour change function is equivalent to the output of that change as modelled by code fuzzing, meaning that the fuzzing tools described in this dissertation is implicitly a tool for exploring this model.
+\section{A mathematical basis}
+Some sociotechnical mathematics already exists. For example, \(\pi\)-calculus has been suggested as a tool for modelling workflows\cite{Smith2003} (though it should be noted that there is some resistance to this idea\cite{Aalst2004}). The potential for \picalc to be suitable as a workflow modelling system might encourage one to do modify the system such that, rather than mutating Python, \picalc was mutated instead. \par
 
-\subsection{Creating a mathematically rigorous sociotechnical model}
-\label{rigorous_sociotechnical_model}
-Some future work to propose could be a realisation of this mathematical representation of a sociotechnical system. Defining mathematics and terms for the model would be an important step toward creating a single model for sociotechnical systems which can be analysed, for which tools are already available, and which unifies the jargon in the field such that researchers can discuss sociotechnical systems without the risk of ambiguity. 
+This approach appeals for a few reasons. For example, we might want to then perform model checking on the sociotechnical model, which would be possible with currently existing tools\cite{Tiu2005}, adding another reason why researchers and sociotechnical modellers might want to use and improve this tool. \par
+
+However, \picalc can be complex, and the tool and methods are not yet fully complete, as will be seen. Moreover, the modelling system itself has more pressing concerns than a need for a mathematically focused engine, but this work might be valuable if the tools were to be maintained long-term. \par
+
+Another direction to take sociotechnical mathematics might be responsibility modelling. An adaptation from the current Activity Diagram/workflow-as-blueprint model might be to use fuzzing on responsibility or obligation logics, such as deontic logic\cite{Hutchison2008}. Responsibility modelling is a growing field of research, and here variance might be found as misunderstandings or uncertainties when responsibilities are communicated between actors. This method could therefore be used to model the communication of responsibilities within responsibility modelling, another mathematical basis for code fuzzing as sociotehcnical variance. \par
 
 \section{Middleware layers for submodel interaction}
 \label{middleware-layers}
 The interaction of models currently mostly relies on every detail of the model being worked into the system we're testing, because importing one set of activities into another doesn't account for the interplay between the two systems. \par
+
 One must account for this interplay between systems, because missing even small details from a model leaves that model functionally incomplete: emergent phenomena from that small detail would be lost, and swathes of activity that should be modelled in a perfect case is lost in the incomplete one. \par
+
 To combat this, one might create some middleware that allows two subsystems to interact by registering and referencing each other. In this way, activity from one system can influence another system, even though the two systems do not directly interact. \par
-This middleware layer might also house the environment of the system, so that the environment is kept globally accessible to all procedures, and all subsystems that operate through the middleware interact with the same environment. This would keep the concerns of the modules bound together in one place, with all interactions with the modules of the larger system being together, whether those interactions took place directly between activities in the models or indirectly through changing their shared environment.
+
+This middleware layer might also house the environment of the system, so that the environment is kept globally accessible to all procedures, and all subsystems that operate through the middleware interact with the same environment. This would keep the concerns of the modules bound together in one place, with all interactions with the modules of the larger system being together, whether those interactions took place directly between activities in the models or indirectly through changing their shared environment. \par
 
 \section{Concurrent modelling}
 \label{concurrent_modelling}
-%Mention that different stresses occur when a sociotechnical system has multiple people working in it! 
-%Mentioned in requirements of sociotechnical system \cref{planning_modelling_requirements}
+A sociotechnical system can have many different types of stresses when modelled in a concurrent fashion. This is because multiple human actors greatly affect the complexity of a sociotechnical system increases as the complexity of the interactions on the part of human actors increases. This is necessarily true, because a sociotechnical system is a system that includes complex interactions between humans, machines, and the environment around them\cite{Baxter2011} --- thus, more human interaction adds complexity to the model, as communication between actors might affect workflow. \par%Mention that different stresses occur when a sociotechnical system has multiple people working in it! 
+
+A concurrent modelling system was mentioned when laying out the requirements of a sociotechnical system modelling platform(\cref{planning_modelling_requirements}). While this was not implemented, the choice of Python as a language to create the models in should facilitate this, as Python has support for concurrent processing\cite{16.2.58:online}. Additionally, UML Activity Diagrams have support for Fork and Join methods\cite{Omg2010}, allowing for concurrent modelling in the planning phase of model creation. \par%Mentioned in requirements of sociotechnical system \cref{planning_modelling_requirements}
+
+The combination of these two factors should make concurrent modelling in this system possible and not too difficult to implement; work must be done to solve problems such as race conditions with the sociotechnical environment and multiple actors, or how resources in that environment are expended when multiple actions can be performed by an actor at once. Once solutions to these problems are solved, modellers should be able to employ Python and UML's respective concurrency systems to create concurrent models using this format. \par 
 %Mentioned in tools created, specification of modelling system. When writing this, talk about adapting from UML Activity spec for fork and join methods!
+%Also, concurrency allows other concerns to arise, like solving race conditions. 
 
-\section{Fuzzing other models}
-\label{fuzzing_other_models}
+\subsection{Human interaction modelling}
+An import and difficult to model component of the sociotechnical system is direct social interaction. The workflow of a system is largely human interaction with technology; technological interactions and effects are largely modelled in the atom layer of our model; social interactions must be modelled through some alternative system, where knowledge can be exchanged between actors, or where actors can influence each other's environment, if knowledge is really a component of an actor's sociotechnical environment. \par 
 
+With the current modelling system, no solution to this problem immediately springs to mind. Therefore, development of a solution to this issue --- and therefore development of a more complete sociotechnical system --- are left to future research and development upon this proof of concept. \par
+%Human interactions aren't captured by workflow modelling
+%This is a really important component of the sociotechnical system that comes into play with concurrent actors, but we can't model it currently!
+
+\section{More case studies}
+\label{more_case_studies}
+Additional models, such as models of a barista in a café or a barber in a barbershop would be interesting to develop. These systems are subtle and difficult to model. Moreover, modelling these systems requires gaining an insight into the subtleties of these systems with inherant variance. They can be complicated by equipment not functioning properly in either case, customers being unhappy or interacting in unexpected ways with baristas and barbers in either environment, or actors in the sociotechnical model interacting in unreliable ways with both the technology they are in charge of and each other. \par
+
+Therefore, cafés and barbershops make for interesting case studies, as they are extreme sociotechnical systems that are also mundane: as we interact with them daily, we have a basic understanding of their complexities without really knowing their subtleties. Moreover, both cases have a degree of subtlety but aren't seriously complex sociotechnical systems compared to other potential case studies, such as a university's payroll system or the UK's National Health Service. They also may contain unreliabilities and complexities that lead to more detailed and interesting mutations, particularly when both are made concurrent. \par
+
+
+%Could write here about fuzzing a model of a barisa's workflow(s)
+%Could also write here about different systems with different focuses e.g. i* or responsibility modelling
+
+\section{Fuzzing more models}
+\label{fuzzing_more_models}
+A component of the functionality of this method is that it relies on workflow modelling. This is necessary, because we introduce sociotechnical stress as alterations to the workflow --- the workflow therefore needs to be modelled. However, one method to solve the social interaction modelling would be to mutate actor or intent modelling platforms, often used for requirements engineering. \par
+
+Other interesting models to mutate would be goal-oriented models such as i*\cite{Yu2009}, where alterations to the model would be changes to goals actors might work towards. This could be a useful way to demonstrate differences in communication or misunderstandings between actors, effectively goal-oriented sociotechnical stress. \par
+
+Furthermore, we might even want to mutate dataflow based models like OBASHI\cite{ObashiMethodology}, where mutations might occur as alterations to the flow of information. Impact analysis\cite{Bohner96softwarechange} could therefore be modelled by observing the affect that change of Business \& IT system state has on the running of that system. Currently, functionality like this is missing from tools such as OBASHI in a random way, using something such as fuzzing. However, running simulations with fuzzed models might produce very different outlooks on the critical parts of Business \& IT systems.  \par
 
 \section{More sophisticated fuzzing types}
 \label{more_advanced_fuzzing}
+Creating these case study models would require creating more sophisticated fuzzing techniques. While the fuzzing library has been tested and has been shown to successfully introduce sociotechnical variance to a system, the fuzzing techniques used to test the systems have been relatively simple. It would therefore be prudent to test the system with more complicated fuzzing techniques, to see whether the system holds up against this. \par
 
+One reason for this is that a more complex mutation function might introduce bugs in the system that are hard to detect, because the affect the mutation function would have might be harder for the modeller to predict. They might also get quite hard to write, as a result of being a component of the model that feels abstract to write. Having more complex mutation functions would therefore indicate more whether this system is a feasible modelling system in its own right, and whether code fuzzing can be successfully introduced to a system using the models already created. \par
+
+Another reason is that more complex fuzzing techniques may well test some of the future work addressed above: variance through social interaction, alternative case studies where more complex fuzzing is appropriate, or putting a mathematical modelling system through some more intense tests. It should also show whether more complex fuzzing systems can stay reasonably safe in terms of the mutated code and Turing's Halting Problem\cite{Turing1937}, or whether some more safe sandbox for this mutated code should be constructed to aid the modeller. \par%\cite{} halting problem
+
+\section{Multiple fuzzing options in one area of workflow}
+\label{multiple_variances}
+Currently, the system allows one to apply some sociotechnical stress to a part of a workflow, by using a decorator which accepts a mutation function defined by the modeller. While this system adequately reflects sociotechnical stress, in the real world stresses and unreliabilities come from myriad stresses in a variety of ways. Real-world stress isn't just one stress, so much as different stresses compounding. \par
+
+An extension to the fuzzing library, therefore, would be to create some way of combining stresses on a workflow for larger, more realistic systems than the one tested. These systems would really need the added complexity of different stresses combined to accurately reflect real-world variance on their workflows. \par
+
+This addition to the current library might be easier if a more mathematical back-end were implemented, as composing mathematical functions might prove much easier than somehow combining procedures. Some other concerns also need to be addressed before this can be implemented, however. One concern that needs to be addressed is that different stresses might act in different amounts on a system. It might be that a workflow is altered by hard-to-meet deadlines only a little, while variance is often introduced by bad training of new staff. Accurately simulating this variance might mean defining a procedure for deadline stress and another for bad training, then a separate method for defining the degree to which each stress affects the system. Retaining the simplicity of the approach while introducing this additional complexity to the fuzzing layer might be difficult to do, and much thought should be given here to the implementation in terms of both accuracy of simulation and ease of modelling. \par
+
+\section{Markov Chains from simulations}
+\label{markov_chains}
+Using the tools in their current state, we can now step through a simulation which has sociotechnical variance inserted, as per the requirements of the project. However, every simulation executed takes time, and building a full view of what that sociotechnical stress looks like after many iterations of a project could take some time for a large model with many mutated areas. \par
+
+A better system might be to model the variance probabilistically, and alter a mathematical model by composing the function of the workflow being mutated with the mutation function in a mathematical way. This would allow us to build variance into the model programmatically using the current notation, with the mathematical foundations described earlier. However, that mathematical model could be hard to make and will likely require lots of research and further development to create. \par
+
+A more immediate solution might be to create a Markov Chain of the varied simulations by running them many times and creating a graph from the simulated workflows. This would give us a graphical representation of the workflow. \par
+
+Markov Chains can be analysed using graph theory. They are very well understood, being necessary in practises such as weather prediction\cite{4970864:online}, and because they are representable as a directed graph with weighted edges, they are also appropriate as a representation of a flowchart. Therefore, a modeller might want to take their procedural model of a workflow and transform it back into a graph; this is easily done using a Markov Chain. \par
+
+A Markov Chain might be generated from a simulation by using decorators for atoms that catch function calls to atoms, and run the atom as they would normally while accounting for preconditions and aftereffects of atoms running if needed. After running the atom, the atom's execution is logged in some chronologically ordered list. After the simulation has finished, a chronological log of every action taken in the simulation is produced. If features of the sociotechnical state are also logged at the time of the atom execution, then we can say, given sociotechnical state, what the next action of an actor in a model is likely to be. We can use this to build our Markov Chain, by weighting each edge between nodes according to the probability that, if the source node of the edge is the action just completed, then the target node of the edge is a possible next action given the actions taken in the simulation, with a weight according to the probability of traversing that edge with the current sociotechnical environment's state. \par
+
+If many simulations were done, generating a large corpus of data collected with sociotechnical stress present, then a reasonably accurate Markov Chain could be produced which could then be analysed in a mathematical way. Traversing this Markov Chain would not take much less time than a regular workflow on account of the fact that most of the time spent by the computer in running the models is in alterations to the sociotechnical environment, but a mutated model might be different. This is because no mutations need to be created, as the variance is built into the Markov Chain, so for models that heavily employ stress modelling or employ relatively complex mutation functions, no additional work is needed to alter the workflow. \par
