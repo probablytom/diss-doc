@@ -3,12 +3,25 @@
 \pagenumbering{arabic}
 
 \section{Introduction}
+When a person wants to make a model of some real-world situation, lots of things need to be accounted for. Moreover, different models might be concerned with very different things. For example, a model of some physical system and the forces acting on it can be relatively easy to model, compared to a street on a busy day or the inner workings of a pancreas. There are also different types of complexity: where the pancreas plays host to several rather complex physiological interactions, other systems are less physical in nature. The busy street requires a degree of social modelling to model accurately, for example. \par
 
+A model of a system with interactions between social and technical things, which also interact with their environments, is termed a \emph{sociotechnical} model. A sociotechnical model has unusual complexities involved in its modelling, such as people sharing information, or how they go about achieving a goal should a piece of equipment break. Unlike physical modelling problems, where the physics and mathematical laws governing how things act are well known, sociotechnical modelling has another degree of complexity in understanding the rules and guidelines that shape the behaviour of a person or group with their technology or environment. \par
 
 \section{Context}
+As a result of this high degree of complexity in sociotechnical modelling, the practice of creating sociotechnical models is notoriously difficult. This is especially true when trying to model the way that humans in these models act under stress. This is important to model for accuracy's sake, because these stresses can subtly affect the way people operate, and even small changes to sociotechnical models can greatly affect the product of a model\cite{Crabtree2000}. \par
+
+As a result of the rapidly increasing degree of complexity, and the difficulties involved in simulating very important subtleties, sociotechnical modelling is a very difficult thing to do well. Regardless, sociotechnical modelling also has its uses, from mapping out the UK's National Health Service's IT systems\cite{Brennan2007} to ethnography\cite{Crabtree2000} and even risk analysis\cite{Storer2010}. \par
+
 \section{Problem}
+When sociotechnical modelling gets very complex, introducing the unreliability of its human actors becomes very difficult. it would be very useful to be able to model sociotechnical systems simply, and then introduce the unreliability of the human actors in the model as imperfections in the simulation. \par
+
+There already exists a technique for introducing imperfections into programming code: \emph{code fuzzing}. Code fuzzing introduces changes to code to confirm that a programmer has written their tests appropriately. If the tests pass even when the code has been made bad, then the original code may contain bugs even if the tests pass. \par
+
+This technique is interesting, because it suggests that it may be possible to produce these imperfections in a sociotechnical model, if the model is written in programming code that can be edited using existing methods. If those imperfections can be introduced in such a way that they are representative of the imperfections in human activity, then this might simplify the model created and help us to create more complex models without the overhead complexity of actor unreliability. \par
+
+A method for creating this mutated model, representing human-like inconsistency in the code, and creating models suitable for mutation must therefore be made to determine whether code fuzzing can really simulate these inconsistancies, and whether this technique can be feasibly used. \par
 
 \section{Terminology}
-For clarification of terms within this dissertation, some definitions of terms used have been provided: 
+For clarification of terms within this report, some definitions of terms used have been provided: 
 \label{introducing_technology}
 \input{chapters/Definitions}
