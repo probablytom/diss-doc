@@ -2,7 +2,7 @@
 \label{motivations}
 Sociotechnical modelling is important: it can give insight into organisations as small as startups and as large as governments and multinational corporations. It has many applications, too, as different groups use it with different aims in mind. Some use sociotechnical modelling to make more efficient workflows\cite{Aalst2002}, while others use it to create more effective end-products or to analyse the potential products of a system. \par
 
-Sociotechnical systems have been widely adopted for these purposes. For example, adoption of ISO standards for state algebras like Z\cite{ZStandardsPanel2000} and modelling techniques made by and for government use such as SSADM show that there's a concerted international push for sociotechnical modelling techniques. Clearly, sociotechnical systems modelling is regarded as a very important practice for all sorts of organisations. From the commercial end of the development spectrum, BPMS has been created for modelling business processes and workflows\cite{bpmsSpec}. \par%ISO standards, recommendations by governments, clearly something people should be using!
+Sociotechnical systems have been widely adopted for these purposes. For example, adoption of ISO standards for state algebras like Z\cite{ZStandardsPanel2000} and modelling techniques made by and for government use such as SSADM show that there is a concerted international push for sociotechnical modelling techniques. Clearly, sociotechnical systems modelling is regarded as a very important practice for all sorts of organisations. From the commercial end of the development spectrum, BPMS has been created for modelling business processes and workflows\cite{bpmsSpec}. \par%ISO standards, recommendations by governments, clearly something people should be using!
 
 Unfortunately, despite its usefulness, sociotechnical modelling remains very difficult. There are many aspects to this difficulty. For example, a sociotechnical system contains lots of detail, not all of which can be modelled all of the time. Vagueness in sociotechnical models is an example of something that remains difficult to accurately capture in a working model\cite{Herrmann1999}.\par
 
@@ -14,11 +14,11 @@ This begs the question: what does a model of sociotechnical stress look like? Mo
 
 This inspired a project to take a model of behaviour as intended as a blueprint of the realistic sociotechnical model, which is then made imperfect \emph{during} the simulation using some technique to alter the model. A technique to alter code already exists in the software engineering community -- process fuzzing, or code mutation\cite{Miller1988} -- and so utilising this for introducing alterations to a model might prove effective. \par%Maybe we can take a regular model as a blueprint of behaviour, and then make meaningful changes to the system to reflect the stress! 
 
-Code fuzzing is interesting because those edits made might represent \emph{changes in behaviour}, given we would be altering a program that represents the behaviour of some actors. However, this approach also raises some questions. For example, would it be feasible to represent an actor's workflow as a regular procedural program in a commonly known language? Furthermore, would this code fuzzing approach to simulating sociotechnical stress be particularly effective, or is another approach necessary? These questions construct the hypothesis of the project: 
-\begin{displayquote}
-Can code fuzzing feasibly be used to simulate stress within a sociotechnical model?
-\end{displayquote}%\par%Those changes would have to be edits to the behaviour
+Code fuzzing is interesting because those edits made might represent \emph{changes in behaviour}, given we would be altering a program that represents the behaviour of some actors. However, this approach also raises some questions. For example, would it be feasible to represent an actor's workflow as a regular procedural program in a commonly known language? Furthermore, would this code fuzzing approach to simulating sociotechnical stress be particularly effective, or is another approach necessary? These questions construct the hypothesis of the project: \par
+\hfill \\
 
+\centerline{\emph{Can code fuzzing feasibly be used to simulate stress within a sociotechnical model?}}
+\hfill \\
 
 \section{Aims}
 \label{aims}

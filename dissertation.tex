@@ -23,6 +23,7 @@
 \crefformat{section}{§#2#1#3}
 \crefformat{chapter}{§#2#1#3}
 \crefformat{figure}{Figure #2#1#3}
+\crefname{appendix}{Appendix}{Appendices}
 
 \newcommand{\todo}[1]{\colorbox{BurntOrange}{\color{White}{TODO: \textsc{#1}}}}
 \newcommand{\picalc}{\(\pi\)-calculus }
@@ -30,11 +31,6 @@
 
 \bibliography{library,additional}
 
-\lstset{
-    frame=single,
-    breaklines=true,
-    postbreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\color{red}\hookrightarrow\space}}
-}
 
 \begin{document}
 \title{Code Fuzzing for Sociotechnical Variance}  % To be changed!
@@ -56,5 +52,8 @@
 
 
 \printbibliography
+
+\include{chapters/Appendices}
+
 
 \end{document}

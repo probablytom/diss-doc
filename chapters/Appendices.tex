@@ -1,0 +1,463 @@
+\begin{appendices}
+\crefalias{appendix}{appsec}
+\appendix
+
+% Add things as \chapters with a label beginning with "appendix:"
+\chapter{Agile Flows}
+\label{appendix:agile_flows}
+Following are the flows used to test the Agile methodology: \par
+
+\begin{pyglist}[language = python, caption={Flows used to test the Agile methodology}, listingname=\textbf{Code Listing} \comment{, fvset={frame=single,framerule=1pt}}, numbers=left]
+@flow
+def make_new_feature():
+    create_feature()
+
+
+def create_test_and_code():
+    create_test_tdd()
+    add_chunk_tdd()
+
+
+@flow
+def unit_test():
+    run_tests()
+    while not environment.resources["unit tests passing"]:
+        fix_recent_feature()
+        run_tests()
+
+
+@flow
+def fix_recent_feature():
+    for feature in environment.resources['features']:
+        for chunk in feature:
+            fix_chunk(chunk)
+
+
+@flow
+def integration_test():
+    perform_integration_tests()
+    while not environment.resources["integration tests passing"]:
+        unit_test()
+        perform_integration_tests()
+
+
+@flow
+def user_acceptance_test():
+    perform_user_acceptance_testing()
+    while not environment.resources["user acceptance tests passing"]:
+        unit_test()
+        integration_test()
+        perform_user_acceptance_testing()
+
+
+@flow
+@mutate(stressed)  # This gets changed to cannot_meet_deadlines for additional tests
+def implement_feature():
+    create_test_and_code()
+    unit_test()
+    integration_test()
+    user_acceptance_test()
+
+
+@flow
+def implement_50_features():
+    for i in range(50):
+        make_new_feature()
+        implement_feature()
+\end{pyglist}
+
+\chapter{Waterfall Flows}
+\label{appendix:waterfall_flows}
+Following are the flows used to test the Waterfall methodology: \par
+
+\begin{pyglist}[language = python, caption={Flows used to test the Waterfall methodology}, listingname=\textbf{Code Listing} \comment{, fvset={frame=single,framerule=1pt}}, numbers=left]
+@flow
+def write_code():
+    add_chunk_waterfall()
+
+
+@flow
+def unit_test():
+    for chunk in environment.resources["features"]:
+        if chunk.test is None: create_test_for_chunk(chunk)
+    run_tests()
+    while not environment.resources["unit tests passing"]:
+        fix_codebase()
+        run_tests()
+
+
+@flow
+def fix_codebase():
+    for test in environment.resources["tests"]:
+        if not test_passes(test):
+            fix_chunk(test.chunk)
+
+
+@flow
+def integration_test():
+    perform_integration_tests()
+    while not environment.resources["integration tests passing"]:
+        fix_codebase()
+        perform_integration_tests()
+
+
+@flow
+def user_acceptance_test():
+    perform_integration_tests()
+    while not environment.resources["integration tests passing"]:
+        fix_codebase()
+        perform_integration_tests()
+        integration_test()
+
+
+@flow
+@mutate(stressed) # This gets changed to cannot_meet_deadlines for additional tests
+def create_product():
+    for i in range(environment.resources["size of product in features"]):
+        write_code()
+    for i in range(environment.resources["size of product in features"]):
+        unit_test()
+    for i in range(environment.resources["size of product in features"]):
+        integration_test()
+    for i in range(environment.resources["size of product in features"]):
+        user_acceptance_test()
+
+
+@flow
+def implement_50_features():
+    environment.resources["size of product in features"] = 50
+    create_product()
+\end{pyglist}
+
+\chapter{Mutator Functions}
+\label{appendix:mutator_functions}
+Following are the mutator functions used in this report's experiments.\par
+
+\begin{pyglist}[language = python, caption={Mutator functions used in experiments}, listingname=\textbf{Code Listing} \comment{, fvset={frame=single,framerule=1pt}}, numbers=left]
+def random_boolean():
+    return random.choice([True, False])
+
+
+def stressed(lines):
+    if random_boolean():
+        lines.remove(random.choice(lines))
+    return lines
+
+
+def cannot_meet_deadline(lines):
+    if random_boolean():
+        lines = lines[:random.randint(1, len(lines)-1)]
+    return lines
+\end{pyglist}
+
+\chapter{Software Engineering atoms}
+\label{appendix:atoms}
+Following and the sociotechnical atoms used to power the previous flows.
+
+\begin{pyglist}[language = python, caption={Atoms used in experiments}, listingname=\textbf{Code Listing} \comment{, fvset={frame=single,framerule=1pt}}, numbers=left]
+
+@atom
+def create_feature():
+    environment.resources["features"].append([])
+    environment.resources["current feature"] = len(environment.resources["features"])-1
+
+
+@atom
+def add_chunk(testing=False):
+    environment.resources["time"] += 2
+    feature = environment.resources["current feature"]
+    chunk = dag.Chunk()
+
+    # Add a test if it's necessary
+    if testing:
+        test = environment.resources["tests"][-1]
+        chunk.test = test
+        test.chunk = chunk
+        environment.resources["tests"].append(test)
+
+    # Record this chunk of code
+    environment.resources["features"][feature].append(chunk)
+
+    # Conditionally add a bug to the chunk
+    if random.randint(3,5) is 4:
+        bug = dag.Bug(chunk)
+        environment.resources["bugs"].append(bug)
+
+    # We're now working on the chunk we just created, so...
+    environment.resources["current chunk"] = chunk
+
+
+@atom
+def add_chunk_waterfall(testing=False):
+    environment.resources["time"] += 2
+    chunk = dag.Chunk()
+
+    # Add a test if it's necessary
+    if testing:
+        if len(environment.resources["tests"]) is not 0:
+            test = environment.resources["tests"][-1]
+            if test is not None:
+                chunk.test = test
+                test.chunk = chunk
+                environment.resources["tests"].append(test)
+
+    # Record this chunk of code
+    environment.resources["features"].append(chunk)
+
+    # Conditionally add a bug to the chunk
+    if random.randint(3,5) is 4:
+        bug = dag.Bug(chunk)
+        environment.resources["bugs"].append(bug)
+
+    # We're now working on the chunk we just created, so...
+    environment.resources["current chunk"] = chunk
+
+
+@atom
+def add_chunk_tdd(testing=True):
+    environment.resources["time"] += 2
+    feature = environment.resources["current feature"]
+    chunk = dag.Chunk()
+
+    # Add a test if it's necessary
+    if testing:
+        if len(environment.resources["tests"]) is not 0:
+            test = environment.resources["tests"][-1]
+            if test is not None:
+                chunk.test = test
+                test.chunk = chunk
+                environment.resources["tests"].append(test)
+
+    # Record this chunk of code
+    environment.resources["features"][feature].append(chunk)
+
+    # Conditionally add a bug to the chunk
+    if random.randint(3,5) is 4:
+        bug = dag.Bug(chunk)
+        environment.resources["bugs"].append(bug)
+
+    # We're now working on the chunk we just created, so...
+    environment.resources["current chunk"] = chunk
+
+
+@atom
+def create_test_for_chunk(chunk):
+    environment.resources["time"] += 1
+    if chunk.test is None:
+        test = dag.Test(chunk)
+        environment.resources["tests"].append(test)
+        chunk.test = test
+
+def create_test_tdd():
+    environment.resources["time"] += 1
+    test = dag.Test()
+    environment.resources["tests"].append(test)
+
+
+@atom
+def fix_chunk(chunk=None):
+    if chunk is None: chunk = environment.resources["current chunk"]
+
+    # Iterate over bugs that affect the chunk and thrash until fixed
+    for bug in environment.resources["bugs"]:
+        while detects_bug(chunk.test, bug):
+            environment.resources["time"] += cost_of_bug(bug)
+            if random.randint(0, 5) is 4:
+                remove_bug(bug)
+                break
+
+
+@atom
+def perform_integration_tests():
+    if len(environment.resources["bugs"]) == 0:
+        environment.resources["integration tests passing"] = True
+        return True
+    number_of_messy_bugs = random.randint(0,len(environment.resources["bugs"]))
+    environment.resources["integration tests passing"] = number_of_messy_bugs == 0
+
+    return environment.resources["integration tests passing"]
+
+
+@atom
+def run_tests():
+    environment.resources["unit tests passing"] = number_of_detected_bugs() == 0
+    return environment.resources["unit tests passing"]
+
+
+@atom
+def perform_user_acceptance_testing():
+    environment.resources["time"] += 1
+    environment.resources["user acceptance tests passing"] = environment.resources["unit tests passing"]
+    return environment.resources["user acceptance tests passing"]
+\end{pyglist}
+
+\chapter{Environment Layer}
+\label{appendix:environment}
+\begin{pyglist}[language = python, caption={Environment layer contents}, listingname=\textbf{Code Listing} \comment{, fvset={frame=single,framerule=1pt}}, numbers=left]
+resources = {}
+resources["time"] = 0
+resources["seed"] = 0
+resources["integration tests passing"] = False
+resources["user acceptance tests passing"] = False
+resources["unit tests passing"] = False
+resources["tests"] = []
+resources["successful deployment"] = False
+resources["features"] = []  # To be a list of Chunk objects
+resources["bugs"] = []  # To be a list of Bug objects
+resources["mutating"] = True
+resources["current chunk"] = None
+resources["most recent test"] = None
+resources["current bug"] = None
+resources["current feature"] = 0
+\end{pyglist}
+
+\begin{pyglist}[language = python, caption={Classes used by sociotechnical environment}, listingname=\textbf{Code Listing} \comment{, fvset={frame=single,framerule=1pt}}, numbers=left]
+import environment
+
+class Vertex:
+    id = 0
+
+    def __init__(self):
+        self.adj = []  # A list of vertices this vertex points to
+        self.timeCreated = environment.resources["time"]
+        self.id = Vertex.id
+        Vertex.id += 1
+
+
+    def add_adjacent(self, other_vertex):
+        self.adj.append(other_vertex)
+
+    def remove_adjacent(self, other_vertex):
+        self.adj.remove(other_vertex)
+
+    def adjacences(self):
+        return self.adj
+
+    def is_adjacent_to(self, other_vertex):
+        return other_vertex in self.adj
+
+    def age(self):
+        return environment.resources["time"] - self.timeCreated
+
+
+
+'''
+    The chunks a bug affects are its adjacent vertices
+    i.e. if a bug applies to a chunk, add the chunk as an adjacent vertex
+'''
+class Bug(Vertex):
+    def __init__(self, buggy_chunk=None):
+        Vertex.__init__(self)
+        self.chunks = []
+        if buggy_chunk is not None: self.chunks.append(buggy_chunk)
+
+    def affects(self, chunk):
+        for affectedChunk in self.chunks:
+            if chunk.id == affectedChunk.id:
+                return True
+        return False
+
+
+'''
+    The bugs a chunk's tests will detect are the adjacent vertices
+    i.e. if a chunk detects a bug, add the bug as an adjacent vertex
+'''
+class Chunk(Vertex):
+
+    def __init__(self, test=None):
+        Vertex.__init__(self)
+        self.test = test
+
+    def is_tested(self):
+        return self.test is not None
+
+
+'''
+    A test that applies to a chunk or series of chunks
+    If the test applies to more than one chunk, you should find them in the test's adjacency matrix
+'''
+class Test(Vertex):
+
+    def __init__(self, chunk=None, works=True):
+        Vertex.__init__(self)
+        self.chunk = chunk
+        self.works = works
+\end{pyglist}
+
+\chapter{Fuzzing Library}
+\label{appendix:fuzzing_library}
+
+\begin{pyglist}[language = python, caption={Complete fuzzing library}, listingname=\textbf{Code Listing} \comment{, fvset={frame=single,framerule=1pt}}, numbers=left]
+import environment, random, ast, inspect
+
+class ResourcesExpendedException(Exception):
+    pass
+
+
+class Mutator(ast.NodeTransformer):
+
+    mutants_visited = 0
+
+    # The mutation argument is a function that takes a list of lines and returns another list of lines.
+    def __init__(self, mutation=lambda x: x, strip_decorators = True):
+        self.strip_decorators = strip_decorators
+        self.mutation = mutation
+
+    #NOTE: This will work differently depending on whether the decorator takes arguments.
+    def visit_FunctionDef(self, node):
+
+        # Fix the randomisation to the environment
+        random.seed(environment.resources["seed"])
+
+        # Mutation algorithm!
+        node.name += '_mod'   # so we don't overwrite Python's object caching
+        # Remove decorators if we need to So we don't re-decorate when we run the mutated function, mutating recursively
+        if self.strip_decorators:
+            node.decorator_list = []
+        # Mutate! self.mutation is a function that takes a list of line objects and returns a list of line objects.
+        node.body = self.mutation(node.body)
+
+        # Now that we've mutated, increment the necessary counters and parse the rest of the tree we're given
+        Mutator.mutants_visited += 1
+        environment.resources["seed"] += 1
+        return self.generic_visit(node)
+
+
+class mutate(object):
+
+    cache = {}
+
+    def __init__(self, mutation_type):
+        self.mutation_type = mutation_type
+
+    def __call__(self, func):
+        def wrap(*args, **kwargs):
+
+            if environment.resources["mutating"] is True:
+
+                # Load function source from mutate.cache if available
+                if func.func_name in mutate.cache.keys():
+                    func_source = mutate.cache[func.func_name]
+                else:
+                    func_source = inspect.getsource(func)
+                    mutate.cache[func.func_name] = func_source
+                # Create function source
+                func_source = ''.join(func_source) + '\n' + func.func_name + '_mod' + '()'
+                # Mutate using the new mutator class
+                mutator = Mutator(self.mutation_type)
+                abstract_syntax_tree = ast.parse(func_source)
+                mutated_func_uncompiled = mutator.visit(abstract_syntax_tree)
+                mutated_func = func
+                mutated_func.func_code = compile(mutated_func_uncompiled, inspect.getsourcefile(func), 'exec')
+                mutate.cache[(func, self.mutation_type)] = mutated_func
+                mutated_func(*args, **kwargs)
+            else:
+                func(*args, **kwargs)
+        return wrap
+
+    @staticmethod
+    def reset():
+        mutate.cache = {}
+\end{pyglist}
+
+\end{appendices}

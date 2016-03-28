@@ -28,13 +28,7 @@ Constructing the flows was as simple as following the understanding of the syste
 
 As was noted in \cref{pictorial}, UML diagrams can be programmatically transformed into executable skeleton code with ease. In this way, converting the model to code ready for fuzzing would be even easier than it already is in the future. \par
 
-
-
-\comment{Have the agile flow source here!}
-
-
-
-This procedure was carried out for both the agile and waterfall workflows. 
+This procedure was carried out for both the agile and waterfall workflows. The agile flows used for the experiments can be found in \cref{model_creation_sssec}, for example. Further code examples can be found in the Appendices (\cref{appendix:agile_flows}, \cref{appendix:waterfall_flows}). \par
 
 \subsection{Building atoms}
 Once flows were successfully built, all nodes on the Activity Diagrams that did not have a definition as another must be defined as atoms. Therefore, after the flows had been written as python programs, every function call that had no definition was indicated by the IDE, making the remaining work easy to spot. The errors in the flows were solved by creating the relevant atoms, together with the environment necessary to facilitate their effects, and the sociotechnical models were complete. \par
@@ -101,12 +95,35 @@ The flows were run within a series of unit tests that confirmed that the sociote
 
 Similar unit tests were then run with the environment turned off and turned on separately, so as to compare the effect of mutating each model. A method was implemented in each model to reset its sociotechnical environment to some base state, which meant that a model could be run indefinitely many times in the same unit test. \par
 
-Once the mutation library was verified to be working, a unit test was constructed that ran each model twice --- once mutated, and once in its unmodified state --- and calculated the difference in the time each model took to implement 50 features when put under stress in its unit testing phase. The difference was then compared between the two executions of the models. \par
+Once the mutation library was verified to be working, a unit test was constructed that ran each model twice --- once mutated, and once in its unmodified state --- and calculated the difference in the time each model took to implement 50 features when put under stress in its unit testing phase. This would be done four times with four different (but predetermined) random seeds. The difference was then compared between the two executions of the models. \par
 
 If the delta in time taken was less for the agile model than it was for the waterfall model, it would be confirmed that influencing the models using code fuzzing was having the intended effect, as an agile flow should operate better than a waterfall method when put under sociotechnical stress. The unit test was thus written so that it would pass if this was true, indicating that the experiment's hypothesis was validated. \par
 
-When the test was run, it passed, validating the experiment. \par
+When the test was run, it passed, validating the hypothesis. Some graphs of the results were then produced. \par
 
+\subsection{Results of these experiments}
+\label{experimental_results}
+The data produced by the unit test was plotted using the \texttt{pyplot} library\cite{Overv50:online}. As in the unit tests, seeds were varied and an average of the time taken by each team modelled was compared. The data produced by the models can be found in the graphs in \cref{fig:stress_results_graph} and \cref{fig:deadlines_results_graph}.  \par
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/mutate_stressed.png}
+    \caption{A graph of the degree of change in a model undergoing sociotechnical stress created by stressed actors, presented as a decimal proportion of an unvaried flow.}
+    \label{fig:stress_results_graph}
+\end{figure} \par
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/mutate_deadline.png}
+    \caption{A graph of the degree of change in a model undergoing sociotechnical stress created by hard to meet deadlines, presented as a decimal proportion of an unvaried flow.}
+    \label{fig:deadlines_results_graph}
+\end{figure} \par
+
+As can be seen, the varied agile flow outperforms the varied waterfall flow in almost every scenario. This would indicate that the hypothesis was accurate, as one would expect Agile's iterative nature to catch bugs early and fix them when fixing a bug in Agile did not cost much time. \par
+
+The similarities between the two graphs indicate that more complex variance might produce more pronounced or interesting results; however, this more complex variance would require a more complex and/or detailed model, and insufficient time was available to implement this. \par
+
+ \par
 
 \section{Evaluating the tools used}
 The tools performed well in reducing complexity and applying variance to the sociotechnical system. They also made the creation of the sociotechnical system straightforward, as the activity diagram is a very natural way to represent workflow. \par
