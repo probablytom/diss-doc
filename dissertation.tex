@@ -5,6 +5,7 @@
 
 \documentclass[a4paper]{l4proj}
 \usepackage[utf8]{inputenc}
+%\usepackage[scaled=0.8]{beramono}
 \usepackage{fullpage}
 \usepackage{indentfirst}
 \usepackage{csquotes}
@@ -25,8 +26,15 @@
 
 \newcommand{\todo}[1]{\colorbox{BurntOrange}{\color{White}{TODO: \textsc{#1}}}}
 \newcommand{\picalc}{\(\pi\)-calculus }
+\newcommand{\comment}[1]{\ignorespaces}
 
 \bibliography{library,additional}
+
+\lstset{
+    frame=single,
+    breaklines=true,
+    postbreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\color{red}\hookrightarrow\space}}
+}
 
 \begin{document}
 \title{Code Fuzzing for Sociotechnical Variance}  % To be changed!
@@ -40,17 +48,13 @@
 \include{chapters/Introduction}
 \include{chapters/Motivations}
 \include{chapters/Research}
-\include{chapters/Tools_Created}
+\include{chapters/Modelling_System_Created}
+\include{chapters/Fuzzing_Library_Created}
 \include{chapters/Evaluation}
 \include{chapters/Future_Work}
 \include{chapters/Conclusion}
 
 
-%\begin{appendices}
-%
-%\end{appendices}
-
-%\bibliographystyle{plain}
 \printbibliography
 
 \end{document}

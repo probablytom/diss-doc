@@ -1,5 +1,5 @@
-\chapter{Tools Created}
-\label{implementation_head}
+\chapter{Modelling System Implementation}
+\label{modelling_implementation_head}
 As previously discussed, the project's development lay in three key areas: 
 \begin{enumerate}
     \item Some model to fuzz
@@ -37,7 +37,7 @@ Flows are to be made from a high-level perspective, and then broken down into su
     \item User acceptance testing
 \end{itemize} \par
 Which, as a flow, might look like this:
-\begin{pyglist}[language = python, encoding = utf8]
+\begin{pyglist}[language = python, encoding = utf8, numbers=left, listingname=\textbf{Code sample}, caption={Example high-level flow from a series of functions}]
 def implement_feature():
     make_new_feature()
     create_test_and_code()
@@ -47,7 +47,7 @@ def implement_feature():
 \end{pyglist}
 
 When we break down one of these steps in the larger workflow, we get a more fine-grained view of what "unit testing" entails:\label{small_code_sample}
-\begin{pyglist}[language = python, encoding = utf8]
+\begin{pyglist}[language = python, encoding = utf8, numbers=left, listingname=\textbf{Code sample}, caption={Fine grained view of the earlier top-level workflow}]
 def implement_feature():
     make_new_feature()
     create_test_and_code()
@@ -80,7 +80,7 @@ Doing this separates the concerns of the two layers, which, while useful for fuz
 As a result of this distinction, another should be drawn: atoms cannot be mutated. This is because the mutation we enact is on a sociotechnical flow or \emph{workflow}, whereas atoms are \emph{activities}. The distinction is similar to that between actions we choose to do and physics itself: we are bound by the laws of physics and cannot change this element of our own environment. It is possible, however, to change the things we do within these laws of physics, which are our own workflows. Similarly, sociotechnical atoms are the physics of the workflow: they shouldn't be changed, because if an actor was to do things in the wrong order or forgets to act in certain ways, this does not change the effect that their individual actions have on their environment. Rather, the actions they actually perform are changed. Therefore, every action an actor can perform is that actor's own sociotechnical physics, and an action's effects on its environment do not change. An example of this would be unit testing: if a programmer writes a test, that test is written and is a component of their sociotechnical environment. They may forget to write a test though; this is a change to the programmer's workflow, so it is represented as a mutation in the workflow layer of the model that they run within. \par
 
 To extend the above example model to include an atom, create\_test\_tdd\(\), too, one might write:\label{large_code_sample}
-\begin{pyglist}[language = python, encoding = utf8]
+\begin{pyglist}[language = python, encoding = utf8, numbers=left, listingname=\textbf{Code sample}, caption={Sample from a model including flows and atoms}]
 #An example flow, does not affect environment
 def implement_feature():
     make_new_feature()
@@ -119,8 +119,16 @@ Because the environment itself will be driven entirely by the atoms created, it 
 
 An example model can be found in the Evaluation section (\cref{evaluation}). \par
 
+
+%================%================%================%================%================%================
+%%================%================ THIS IS NOW COMMENTED OUT ======%================%================
+%================%================%================%================%================%================
+\comment{
 \section{Fuzzing Library}
 \label{planning_fuzzing_implementation} % Cass points out that I don't mention why I don't use a language other than Python. Worth discussing here
+
+\subsection{}
+
 \todo{Rewrite this section!}
 \todo{Write about the decorators for flows and atoms that run based on preconditions!}
 \todo{Write about preconditions and aftereffects}

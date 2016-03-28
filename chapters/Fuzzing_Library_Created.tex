@@ -1,0 +1,283 @@
+\chapter{Fuzzing Library Implementation}
+The implementation of the fuzzing library was broken down into two distinct parts. \par
+
+The first was a wrapping function that would allow a modeller to determine which of their functions were to be mutated. This was done by employing \emph{decorators}. \emph{Decorators} are a feature of Python that allow for a clean notation to wrap a function in another function. The wrapping function (the decorator) is passed a function object when the original function is called by a program, and is expected to run the original function around some other work or to conditionally run the function if some preconditions were met. This is often employed for URL to controller function routing in web app frameworks like Django\cite{Azzopardi2016a}. \par
+
+For our purposes, the decorator would run a mutated version of the original function, meaning that every time the function was called, the decorator would generate a mutation of that function from some source code. Upon generating this fuzzed version of the function, the decorator would call this rather than the original function, thereby running a variant that simulates the unreliability of human actors in a sociotechnical system, as per the library's requirements. \par
+
+The second section of the library would be the mutation class itself. To do this, inspiration was taken from PyMuTester\cite{GitHu12:online}, which creates an Abstract Syntax Tree from source code and modifies the source for the purposes of analysis. Another reason for continuing to use Python was the availability of an Abstract Syntax Tree library built in to Python\cite{32.2.7:online}, which PyMuTester also used. Where PyMuTester used a Python NodeVisitor to collect information about source, however, we utilised a Python NodeTransformer to edit an abstract syntax tree and return a mutated version. \par
+
+\section{A note on functions and Function objects}
+In Python, a function is really a Function object. This is because, while Python is interpreted, it will compile a function definition for reasons of efficiency and operations internal to the Python interpreter; Python uses the Function objects it has compiled internally, but because that function object is also in the scope of any program with that function definition, the Function object is available to the programmer, too. Therefore, when we make a function call, like so: \par
+
+\begin{pyglist}[language = python, encoding = utf8, caption = {A basic Python example}, listingname=\textbf{Code Sample}, numbers=left]
+def chunky():
+  print 1
+  print 2
+  print 3
+  
+chunky()
+\end{pyglist} \par
+
+We could just as easily call our function without using the syntactic sugar (though this isn't recommended): \par
+
+\begin{pyglist}[language = python, encoding = utf8, caption = {Demonstrating Python's \_\_call\_\_() syntactic sugar}, listingname=\textbf{Code Sample}, numbers=left]
+def chunky():
+  print 1
+  print 2
+  print 3
+  
+chunky.__call__()
+\end{pyglist} \par
+
+Furthermore, we might have a function that we want to parameterise with the operations of another function, for which we might pass in a Function object as a parameter: 
+
+\begin{pyglist}[language = python, encoding = utf8, caption = {Python function objects can be passed and run, like a function pointer}, listingname=\textbf{Code Sample}, numbers=left]
+def add(number1, number2):
+  return number1 + number2
+  
+def multiply(number1, number2):
+  return number1 * number2
+  
+def operate(func, number1, number2):
+  return func(number1, number2)
+
+print operate(add, 4, 5)
+print operate(multiply, 4, 5)
+\end{pyglist} \par
+
+This would use the Function object passed as an argument to calculate and print: \par
+
+\begin{verbatim}
+--> 9
+--> 20    
+\end{verbatim}\par
+
+One might think of a python Function object as the closest thing you might get to an actual function pointer in Python. This is important, because when we use Python decorators, they will wrap a function call in the decorator. That is to say, 
+\begin{pyglist}[language = python, encoding = utf8, caption = {A basic decorator example}, listingname=\textbf{Code Sample}, numbers=left]
+@myDecorator
+def myFunction():
+  print 1
+  print 2
+  print 3
+  
+myfunction()
+\end{pyglist} \par
+
+Will be interpreted by Python as: 
+\begin{pyglist}[language = python, encoding = utf8, caption = {How Python interprets a decorated function call}, listingname=\textbf{Code Sample}, numbers=left]
+@myDecorator
+def myFunction():
+  print 1
+  print 2
+  print 3
+  
+myDecorator(myfunction)()
+\end{pyglist} \par
+Here, myDecorator is a function that receives a Function object as a parameter, and \emph{returns another function object}. In Python, we can write a function that defines a function, because internally Python is simply creating a new object. Therefore, we can return function objects in the same way we might list objects or vectors or Files. Python uses this to fulfil its decorator pattern, which we employ extensively for readable mutation systems, and for configuring our mutations themselves, as described below(\cref{mutation_function_explanation}). \par
+
+\section{Decorator}
+\subsection{Code and functionality}
+The code for a decorator was fairly simple. Python allows us to write decorators in two ways: as a function that receives a function object and returns a function object, or as a class with a \texttt{\_\_call\_\_} method that returns a function object and a constructor that receives a function object. Using the class definition allowed us to create a decorator which accepted parameters, which we use for parametrising the mutation functionality(\cref{mutation_function_explanation}). Therefore, the mutator could be constructed as simply as:
+
+\begin{pyglist}[language = python, encoding = utf8, caption={The "mutate" decorator}, listingname=\textbf{Code Sample}, listingname=\textbf{Code Sample}, numbers=left]
+class mutate(object):
+
+    cache = {}
+
+    def __init__(self, mutation_type):
+        self.mutation_type = mutation_type
+
+    def __call__(self, func):
+        def wrap(*args, **kwargs):
+
+            if environment.resources["mutating"] is True:
+
+                # Load function source from mutate.cache if available
+                if func.func_name in mutate.cache.keys():
+                    func_source = mutate.cache[func.func_name]
+                else:
+                    func_source = inspect.getsource(func)
+                    mutate.cache[func.func_name] = func_source
+                # Create function source
+                func_source = ''.join(func_source) + '\n' + func.func_name + '_mod' + '()'
+                # Mutate using the new mutator class
+                mutator = Mutator(self.mutation_type)
+                abstract_syntax_tree = ast.parse(func_source)
+                mutated_func_uncompiled = mutator.visit(abstract_syntax_tree)
+                mutated_func = func
+                mutated_func.func_code = compile(mutated_func_uncompiled, inspect.getsourcefile(func), 'exec')
+                mutate.cache[(func, self.mutation_type)] = mutated_func
+                mutated_func(*args, **kwargs)
+            else:
+                func(*args, **kwargs)
+        return wrap
+
+    @staticmethod
+    def reset():
+        mutate.cache = {}
+\end{pyglist} \par
+
+This is, in fact, the entirety of the mutate decorator used in the fuzzing library. The code is be explained below. \par
+
+Now, because the class has a \texttt{\_\_call\_\_} method, Python's syntactic sugar will work; that is to say, Python will interpret \texttt{mutate()()} as valid Python, even though we are technically calling a Class object. This will construct the class (by initialising it), and then running the function associated with the call with \texttt{mutate.\_\_call\_\_()}. \par
+
+However, our mutation function has a parameter, which is the mutation function used by the mutator to alter the source code. The functionality here is explained later, but this means that we now have a decorator that can take arguments, too. So, usage of this decorator would look like this in a model: 
+
+\begin{pyglist}[language = python, encoding = utf8, caption = {Usage of the mutate decorator}, listingname=\textbf{Code Sample}, numbers=left]
+import random
+
+def deadline_stress(lines):
+  lines.remove(random.choice(lines))
+  return lines
+  
+@mutate(deadline_stress)
+def unit_testing_flow():
+  print "I "
+  print "am "
+  print "mutated!"
+\end{pyglist}\par
+
+It is evident from the decorator notation above the definition of \texttt{unit\_testing\_flow()} that this flow is being mutated, and that the format of its mutation is according to the \texttt{deadline\_stress} function. Internally, \texttt{mutate()} is being initialised with the Function object \texttt{deadline\_stress} as a parameter, the usage of which is described shortly. \par
+
+
+\subsubsection{The decorator's code}
+The mutate decorator used is identical to that above. Its operation is fairly simple: \par
+
+We define a function, \texttt{wrap}, that will be returned as per the requirements of a decorator in Python. \texttt{\_\_call\_\_} takes the function object of the function being decorated as an argument, and \texttt{wrap} is passed any parameters to that function. As per the definition of a Python decorator, we return the \texttt{wrap} function. \par
+
+We only create a mutation if the sociotechnical environment has a flag for mutation turned on. Therefore, if that flag is turned off, this decorated function should simply return the original function and exit. \par
+
+Assuming that the function is instructed to mutate, it loads source code from the original Function object using Python's built in \texttt{inspect} module, which contains a function called \texttt{getsource}. \texttt{getsource} will return source code for the definition of a function as found in the program's source code, complete with decorators. Unfortunately, \texttt{getsource} returns source code for the wrong function if an attempt is made to retrieve source code for a function the library has already mutated, so we cache the source code upon retrieval and load from that cache if we have seen the original Function object before. This way, each mutated Function object has its source code retrieved precisely once. \par
+
+Having retrieved the source code, the source is collected together into a string to be analysed with a call to the function being defined at the end. Notably, this function call is to a function with the original name and ``\_mod'' at the end. This is because, if a function with the same name as that of the original Function object is defined, Python's internal cache of function objects gets overwritten with a mutated version of the function. Therefore, to avoid overwriting Python's internal cache, a new name is given to the function. The function definition itself is given an altered name in the same fashion when the mutation itself occurs(\cref{mutator_implementation}). \par
+
+We create a new mutator and pass it the mutation function given to the \texttt{mutate} decorator at initialisation. The purpose of this is explained in the following sections. Once the mutator is made, it creates an Abstract Syntax Tree of the Function object, traverses the tree with the \texttt{visit} method, and an uncompiled Function object is returned. \par
+
+Once an uncompiled Function object is retrieved, a copy of the original Function object is made so that it can be modified. The compiled bytecode in the copy of the original function object is replaced with the mutated version, compiled using Python's built-in \texttt{compile} function. It should be noted that this mutated compiled bytecode is created from the source traversed by the \texttt{Mutator} class, which received source code with a function call at the end. Therefore, when the new source code is run, it will define a new function with the original name appended by ``\_mod'', defines this new function, and subsequently executes the Function object which contains this mutated bytecode. \par
+
+The \texttt{mutate} class also contains a static method, \texttt{reset}, used if the class' internal cache of function source should need to be reset when running multiple simulations from their initial state. \par
+
+\subsection{Mutation functions}
+\label{mutation_function_explanation}
+\texttt{``Mutation functions''} Have been mentioned multiple times through this documentation so far. A mutation function is a function a modeller makes to define the activity of a mutation, and is used by the \texttt{Mutator} class as seen in the next section(\cref{mutator_implementation}). When a mutator is created by the decorator, it is passed a function that is passed to the decorator; this function is any function in Python that will accept a list containing Python AST Line objects and returns a list containing Python AST Line objects. \par
+
+This is done because the mutation represents sociotechnical variance, and the mutator operates on the definition of some workflow. Therefore, for the modeller to denote the variance that they want to impose on the system, they must denote the changes made to the workflow's definition when under that sociotechnical stress. This function is then used by the \texttt{Mutator} class to alter the workflow in whatever way they require. \par
+
+This function, when passed to the mutator, is called from the function object to alter lines of code within the definition. Therefore, a modeller has complete control over both the model and the variance from it. This is also one of the reasons why the \texttt{mutate} decorator must follow the python Class format rather than a nested function definition, as the nested function definition method cannot accept parameters when used as a decorator. \par
+
+\section{Mutator}
+\label{mutator_implementation}
+The Mutator class is actually slightly less complex than the decorator class, but it performs the mutations on the function we have retrieved the source code from. The class itself inherits from the built-in Python AST module class, \texttt{ast.NodeTransformer}\cite{32.2.24:online}. A NodeTransformer will traverse an Abstract Syntax Tree and modify it as it goes. As a result of a NodeTransformer traversing the tree recursively, it will ``visit'' each child of a node passed to \texttt{self.generic\_visit}. That node has a type according to what exists at that node on the tree. If the NodeTransformer has a method defined, \texttt{visit\_NodeType}, Python will visit using that function. Otherwise, it will simply call \texttt{self.generic\_visit} on that child node, which in turn visits all of its children. \par
+
+The definition of the \texttt{Mutator} class is as follows: \par
+
+\begin{pyglist}[language = python, caption={Mutator class}, listingname=\textbf{Code sample} \comment{, fvset={frame=single,framerule=1pt}}, numbers=left]
+class Mutator(ast.NodeTransformer):
+
+    mutants_visited = 0
+
+    # The mutation argument is a function that takes a list of lines
+    # and returns another list of lines.
+    def __init__(self, mutation=lambda x: x, strip_decorators=True):
+        self.strip_decorators = strip_decorators
+        self.mutation = mutation
+
+    def visit_FunctionDef(self, node):
+
+        # Fix the randomisation to the environment
+        random.seed(environment.resources["seed"])
+
+        # Mutation algorithm!
+        
+        # so we don't overwrite Python's object caching
+        node.name += '_mod'   
+        
+        # Remove decorators if we need to so we don't re-decorate
+        # when we run the mutated function, mutating recursively
+        if self.strip_decorators:
+            node.decorator_list = []
+        
+        # Mutate! self.mutation is a function that takes a list of
+        # line objects and returns a list of line objects.
+        node.body = self.mutation(node.body)
+
+        # Now that we've mutated, increment the necessary counters
+        # and parse the rest of the tree we're given
+        Mutator.mutants_visited += 1
+        environment.resources["seed"] += 1
+        return self.generic_visit(node)
+\end{pyglist} \par
+
+Two pieces of configuration can be passed into the \texttt{Mutator} class upon construction: \par
+
+\begin{enumerate}
+    \item A mutation function object. This will be used to enact sociotechnical stress if required. \\
+    This option defaults to an identity function, so that we can visit the abstract syntax tree without mutating if no option is provided.
+    \item An option to strip a function definition of its decorators (this is a boolean value). \\
+    For the purposes of this experiment, we want to run mutated versions of our functions. We do this by altering the function definition and using this to define new functions. If we define that function with the mutate() decorator associated, we would then run this newly defined function and re-mutate it. Therefore, by default, decorators should be stripped from the mutated function.
+    This is left as an option, however, in case further research wants to mutate undecorated functions, or leave some decorators attached to the function definition (perhaps selectively). The flag is provided for these future work scenarios.
+\end{enumerate} \par
+
+
+As a result of the need to mutate a function definition, and because \texttt{inspect.getsource()} returns the function definition of the flow given to mutate, we can visit and process this function definition by defining a method, \texttt{self.visit\_FunctionDef(self, node)}. Here, \texttt{node} is passed as an argument that represents the function definition in the Abstract Syntax Tree. \par
+
+When visiting a function definition, we will be mutating the source according to some random values, to introduce variance. To make experiments repeatable, the random seed is set according to a value stored in the models. \par
+
+Once the random seed is set, mutation can begin. The name of the node is altered so that the function definition will compile to a function with the original name appended with ``\_mod''. This is the same name created in the decorator and appended to the end of the source being parsed by the \texttt{Mutator} class, so that the newly defined function will execute when this source is recompiled by the decorator. \par
+
+According to the flag provided in the constructor, we might set the list of decorators on the function definition to an empty list; this removes all decorators from the function definition. If future researchers were to mutate functions and retain some decorators, this list would be probed and the required decorators can be kept, rather than simply stripping all decorators from the definition. \par
+
+We alter the body of the function according to the mutation function provided by the modeller. If no mutation function is provided, the \texttt{Mutator} class would run the default identity function against the body, altering nothing. Otherwise, the body of the function is altered according to the function \texttt{Mutator} has been parameterised by. Worth noting is that, because the mutator runs this Function object indiscriminately, the safety of the mutation is left in the hands of the modeller. \par
+
+After this has done, all necessary mutations have been made. The necessary counters are altered, including the random seed; this means that the next mutation's operation is also predictable yet different to the present one, so that the experiments are left predictable. Variance is preserved by the change in the seed, so that the next generated flow is different to the last, as an actor performing a workflow several times would perform that flow subtly differently each time. \par
+
+To finish the mutation, all child nodes are visited. This technically should not be necessary, as no other function definitions should exist within a flow. Considering this, it was determined that traversing the rest of the tree might be useful if future work was to be done extending the library, as this function would behave in a predictable way, and would align more closely with the ordinary activity of a Python \texttt{NodeTransformer}. \par
+
+\section{Example use}
+\label{fuzzing_implementation_example}
+An example of use of the fuzzing library might look like this:
+
+\begin{pyglist}[language = python, caption={Example use of the mutation library}, listingname=\textbf{Code sample} \comment{, fvset={frame=single,framerule=1pt}}, numbers=left]
+import random
+
+# An example mutator function for an actor
+# being inattentive, and so forgetting a step in a workflow.
+def inattentive(lines):
+    if random.choice([True, False]):
+    lines.remove(random.choice(lines))
+    return lines
+
+# A flow for implementing a feature according to an agile methodology
+def implement_feature():
+    make_new_feature()
+    create_test_and_code()
+    unit_test()
+    integration_test()
+    user_acceptance_test()
+
+# A mutated flow where the unit testing actor is inattentive
+@mutate(inattentive)  # Mutation is specified here
+def unit_test():
+    run_tests()
+    while not environment.resources["unit tests passing"]:
+        fix_recent_feature()
+        run_tests()
+
+# Another flow
+def create_test_and_code():
+    create_test_tdd()
+    add_chunk_tdd()
+    
+# An example atom for implementing a test
+def create_test_tdd():
+    environment.resources["time"] += 1
+    test = dag.Test()
+    environment.resources["tests"].append(test)
+\end{pyglist}
+
+Here, the mutation of the flow using the library can be seen in an example taken from a subset of a model used for testing the hypothesis. The flow randomly removes a line from the unit testing flow, but will only do so 50\% of the time due to the \texttt{if} statement on line 6. \par
+
+The library, while small, allows for great flexibility and power. It operates quickly as a result of using the Python built-in \texttt{ast} library. It also appears very cleanly in real-world models, taking one unobtrusive line to specify that a flow exists under stress, as a component of the flow's definition. Usage of the \texttt{mutate} decorator is therefore somewhat self-documenting too. A function under sociotechnical stress is decorated with the fact that it will be mutated, and the type of mutation it is, which if given a sensible name (as above) will describe by name exactly what the mutator function represents. This should also have meaning to the modeller, who wrote the function. \par
+
+A large organisation wishing to create very large models with many types of mutation might create their own library of mutation functions. This way, creation of a varied model is as simple as importing the organisation's library and getting access to (presumably well-tested) sociotechnical variance functions for easy non-deterministic modelling. \par
