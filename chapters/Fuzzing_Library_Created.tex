@@ -1,4 +1,5 @@
 \chapter{Fuzzing Library Implementation}
+\label{fuzzing_implementation_head}
 The implementation of the fuzzing library was broken down into two distinct parts. \par
 
 The first was a wrapping function that would allow a modeller to determine which of their functions were to be mutated. This was done by employing \emph{decorators}. \emph{Decorators} are a feature of Python that allow for a clean notation to wrap a function in another function. The wrapping function (the decorator) is passed a function object when the original function is called by a program, and is expected to run the original function around some other work or to conditionally run the function if some preconditions were met. This is often employed for URL to controller function routing in web app frameworks like Django\cite{Azzopardi2016a}. \par
@@ -19,7 +20,7 @@ def chunky():
 chunky()
 \end{pyglist} \par
 
-We could just as easily call our function without using the syntactic sugar (though this isn't recommended): \par
+Python uses syntactic sugar here, an addition to the language that makes it easier for humans to read and write. Internally, Python changes this to a \texttt{.\_\_call\_\_()} method: \par
 
 \begin{pyglist}[language = python, encoding = utf8, caption = {Demonstrating Python's \_\_call\_\_() syntactic sugar}, listingname=\textbf{Code Sample}, numbers=left]
 def chunky():
@@ -74,7 +75,7 @@ def myFunction():
   
 myDecorator(myfunction)()
 \end{pyglist} \par
-Here, myDecorator is a function that receives a Function object as a parameter, and \emph{returns another function object}. In Python, we can write a function that defines a function, because internally Python is simply creating a new object. Therefore, we can return function objects in the same way we might list objects or vectors or Files. Python uses this to fulfil its decorator pattern, which we employ extensively for readable mutation systems, and for configuring our mutations themselves, as described below(\cref{mutation_function_explanation}). \par
+Here, myDecorator is a function that receives a Function object as a parameter, and \emph{returns another function object}. In Python, we can write a function that defines a function, because internally Python is simply creating a new object. Therefore, we can return function objects in the same way we might list objects or vectors or File objects. Python uses this to fulfil its decorator pattern, which we employ extensively for readable mutation systems, and for configuring our mutations themselves, as described below(\cref{mutation_function_explanation}). \par
 
 \section{Decorator}
 \subsection{Code and functionality}
@@ -118,7 +119,7 @@ class mutate(object):
         mutate.cache = {}
 \end{pyglist} \par
 
-This is, in fact, the entirety of the mutate decorator used in the fuzzing library. The code is be explained below. \par
+This is, in fact, the entirety of the mutate decorator used in the fuzzing library. The code is explained below. \par
 
 Now, because the class has a \texttt{\_\_call\_\_} method, Python's syntactic sugar will work; that is to say, Python will interpret \texttt{mutate()()} as valid Python, even though we are technically calling a Class object. This will construct the class (by initialising it), and then running the function associated with the call with \texttt{mutate.\_\_call\_\_()}. \par
 
@@ -150,7 +151,7 @@ We only create a mutation if the sociotechnical environment has a flag for mutat
 
 Assuming that the function is instructed to mutate, it loads source code from the original Function object using Python's built in \texttt{inspect} module, which contains a function called \texttt{getsource}. \texttt{getsource} will return source code for the definition of a function as found in the program's source code, complete with decorators. Unfortunately, \texttt{getsource} returns source code for the wrong function if an attempt is made to retrieve source code for a function the library has already mutated, so we cache the source code upon retrieval and load from that cache if we have seen the original Function object before. This way, each mutated Function object has its source code retrieved precisely once. \par
 
-Having retrieved the source code, the source is collected together into a string to be analysed with a call to the function being defined at the end. Notably, this function call is to a function with the original name and ``\_mod'' at the end. This is because, if a function with the same name as that of the original Function object is defined, Python's internal cache of function objects gets overwritten with a mutated version of the function. Therefore, to avoid overwriting Python's internal cache, a new name is given to the function. The function definition itself is given an altered name in the same fashion when the mutation itself occurs(\cref{mutator_implementation}). \par
+Having retrieved the source code, the source is collected together into a string to be analysed with a call to the function being defined at the end. Notably, this function call is to a function with the original name and ``\_mod'' at the end. This is because, if a function with the same name as that of the original Function object is defined, Python's internal cache of function objects is overwritten with a mutated version of the function. Therefore, to avoid overwriting Python's internal cache, a new name is given to the function. The function definition itself is given an altered name in the same fashion when the mutation itself occurs(\cref{mutator_implementation}). \par
 
 We create a new mutator and pass it the mutation function given to the \texttt{mutate} decorator at initialisation. The purpose of this is explained in the following sections. Once the mutator is made, it creates an Abstract Syntax Tree of the Function object, traverses the tree with the \texttt{visit} method, and an uncompiled Function object is returned. \par
 
